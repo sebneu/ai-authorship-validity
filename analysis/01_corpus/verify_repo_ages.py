@@ -6,14 +6,11 @@ be drawn from repositories that existed before the cutoff, and a 25-repository s
 put that at roughly 71%. This measures it over the whole frame and writes the eligible
 repository list that build_negatives.py consumes.
 
-Authentication:
-    Set GITHUB_TOKEN in your environment. Unauthenticated requests are capped at 60/h,
-    which cannot finish this job; authenticated requests get 5,000/h.
+It also verifies that each repository name still resolves to the GitHub numeric id
+AIDev recorded: names are reusable after a rename, ids are not.
 
-        export GITHUB_TOKEN=$(cat ~/.config/crossd/github_token)
-
-    Do not place the token in this repository or pass it on the command line, where it
-    would land in your shell history.
+Authentication: see _github.py. Unauthenticated runs cannot finish (60 requests/hour
+against 5,000 authenticated).
 
 Usage:
     python verify_repo_ages.py
@@ -24,7 +21,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import sys
 import time
 import urllib.error
@@ -32,9 +28,10 @@ import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
 from pathlib import Path
-from threading import Lock
 
 import pandas as pd
+
+from _github import RateLimiter, require_token
 
 ROOT = Path(__file__).resolve().parents[2]
 RAW = ROOT / "data" / "raw" / "aidev"
@@ -43,27 +40,6 @@ OUT_DIR = ROOT / "data" / "processed"
 LLM_CUTOFF = datetime(2022, 11, 30, tzinfo=UTC)
 
 API = "https://api.github.com/repos/"
-
-
-class RateLimiter:
-    """Pause all workers when GitHub says the budget is spent."""
-
-    def __init__(self) -> None:
-        self._lock = Lock()
-        self._resume_at = 0.0
-
-    def wait(self) -> None:
-        while True:
-            with self._lock:
-                delay = self._resume_at - time.time()
-            if delay <= 0:
-                return
-            print(f"  rate limited, sleeping {delay:.0f}s", file=sys.stderr)
-            time.sleep(min(delay, 60))
-
-    def pause_until(self, epoch: float) -> None:
-        with self._lock:
-            self._resume_at = max(self._resume_at, epoch)
 
 
 def fetch(full_name: str, token: str | None, limiter: RateLimiter) -> dict:
@@ -121,15 +97,7 @@ def main() -> int:
     ap.add_argument("--out", type=Path, default=OUT_DIR / "repo_ages.parquet")
     args = ap.parse_args()
 
-    token = os.environ.get("GITHUB_TOKEN")
-    if not token:
-        print(
-            "GITHUB_TOKEN is not set. Unauthenticated requests are capped at 60/hour,\n"
-            "which is not enough to finish this job. Export a token and re-run;\n"
-            "see this script's docstring.",
-            file=sys.stderr,
-        )
-        return 2
+    token = require_token()
 
     frame = pd.read_parquet(RAW / f"{args.frame}.parquet")
     names = frame.full_name.dropna().unique().tolist()
