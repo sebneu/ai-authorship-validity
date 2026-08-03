@@ -111,13 +111,22 @@ from cloned repository history rather than from the platform API, where they are
 by committer timestamp and cannot be altered without rewriting history.
 
 \paragraph{Repository eligibility.} Not every repository in the positive set has a
-pre-LLM history. \RESULT{Report the exact share of the \RepoFrame{} curated repositories
-created before \LlmCutoff{}, measured over all of them by
-analysis/01\_corpus/verify\_repo\_ages.py; a preliminary 25-repository sample gave
-roughly 71\%.} Repositories too young to have a pre-cutoff history are excluded from the
-matched analysis, and this exclusion is not random --- newer projects plausibly differ
-in their propensity to adopt agents. We therefore report a generalisation check on the
-excluded repositories using positives alone.
+pre-LLM history. Of the \RepoFrame{} curated repositories, \NOneResolved{} still resolve
+on GitHub --- \NOneUnresolvable{} have been deleted, renamed or withdrawn --- and of
+those, \NOneEligible{} (\NOneEligiblePct{}) were created before \LlmCutoff{}. These form
+the N1 frame. The oldest dates from \NOneOldestRepo{}, so the frame spans the better part
+of two decades of development practice.
+
+Repository names are not stable identifiers: a project can be renamed and its name
+reused by an unrelated project. We therefore verify that each name still resolves to the
+GitHub numeric identifier that AIDev recorded, and exclude any repository where it does
+not, independently of age.
+
+The excluded \NOneExcluded{} repositories are not a random subset --- they are younger, and younger projects plausibly differ in their
+propensity to adopt coding agents. Losing nearly two-fifths of the frame is a real cost
+to statistical power in the matched analysis, and we report a generalisation check on
+the excluded repositories using positives alone to test whether the restriction changes
+the conclusions.
 
 \subsubsection{N2: contemporaneous human contributions}
 \label{sec:groundtruth:n2}

@@ -83,6 +83,11 @@ def fetch(full_name: str, token: str | None, limiter: RateLimiter) -> dict:
                 data = json.load(resp)
             return {
                 "full_name": full_name,
+                # GitHub ids survive renames and transfers; names do not. Capturing
+                # the id lets us prove the name still points at the repository AIDev
+                # observed, rather than at a later occupant of the same name.
+                "github_id": data.get("id"),
+                "resolved_name": data.get("full_name"),
                 "created_at": data["created_at"],
                 "pushed_at": data.get("pushed_at"),
                 "archived": data.get("archived", False),
@@ -151,6 +156,26 @@ def main() -> int:
 
     df["eligible_for_n1"] = False
     df.loc[resolved.index, "eligible_for_n1"] = eligible.values
+
+    # A name that now resolves to a different id than AIDev recorded is a different
+    # repository: renamed away and the name reused, or transferred. Drawing "same
+    # repository" negatives from it would silently compare unrelated projects.
+    df["identity_ok"] = pd.NA
+    if "id" in frame.columns and "github_id" in df.columns:
+        expected = frame.set_index("full_name").id.to_dict()
+        df["identity_ok"] = [
+            pd.NA
+            if pd.isna(gid) or name not in expected
+            else int(gid) == int(expected[name])
+            for name, gid in zip(df.full_name, df.github_id, strict=True)
+        ]
+        mismatched = df[df.identity_ok == False]  # noqa: E712 - pd.NA-safe comparison
+        if len(mismatched):
+            print(f"\n{len(mismatched)} name(s) now point to a different repository:")
+            for _, row in mismatched.head(20).iterrows():
+                print(f"  {row.full_name} -> id {row.github_id} (AIDev had {expected[row.full_name]})")
+            print("  excluded from the N1 frame regardless of age")
+        df.loc[df.identity_ok == False, "eligible_for_n1"] = False  # noqa: E712
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
     df.to_parquet(args.out, index=False)

@@ -25,7 +25,8 @@ from pathlib import Path
 
 import pandas as pd
 
-RAW = Path(__file__).resolve().parents[2] / "data" / "raw" / "aidev"
+ROOT = Path(__file__).resolve().parents[2]
+RAW = ROOT / "data" / "raw" / "aidev"
 
 # Public release of ChatGPT: the boundary defining the pre-LLM negative set.
 LLM_CUTOFF = "2022-11-30"
@@ -84,6 +85,19 @@ def write_tex(path: Path, out: dict) -> None:
         "RepoStarsMedian": f"{out['repository']['stars']['median']:,}",
         "LlmCutoff": out["llm_cutoff"],
     }
+    if "n1_frame" in out:
+        n1 = out["n1_frame"]
+        macros.update(
+            {
+                "NOneResolved": f"{n1['resolved']:,}",
+                "NOneUnresolvable": f"{n1['unresolvable']:,}",
+                "NOneEligible": f"{n1['eligible']:,}",
+                "NOneEligiblePct": f"{n1['eligible_pct']}\\%",
+                "NOneExcluded": f"{n1['queried'] - n1['eligible']:,}",
+                "NOneOldestRepo": n1["created_range"][0],
+            }
+        )
+
     for agent, count in apr["agents"].items():
         name = latex_macro_name(agent)
         macros[f"Agent{name}PRs"] = f"{count:,}"
@@ -201,6 +215,31 @@ def main() -> int:
         f"{human.repo_url.nunique():,} repos, {human.user.nunique():,} users, "
         f"median body {out['human_pull_request']['body_len']['median']} chars"
     )
+
+    # --- N1 eligibility, if verify_repo_ages.py has been run ------------------
+    ages_path = ROOT / "data" / "processed" / "repo_ages.parquet"
+    if ages_path.exists():
+        ages = pd.read_parquet(ages_path)
+        got = ages[ages.created_at.notna()]
+        created_repo = pd.to_datetime(got.created_at, format="mixed", utc=True)
+        eligible = int(ages.eligible_for_n1.sum())
+        out["n1_frame"] = {
+            "queried": len(ages),
+            "resolved": len(got),
+            "unresolvable": len(ages) - len(got),
+            "eligible": eligible,
+            "eligible_pct": round(100 * eligible / len(got), 1),
+            "created_range": [str(created_repo.min().date()), str(created_repo.max().date())],
+            "archived_among_eligible": int(ages[ages.eligible_for_n1].archived.sum()),
+        }
+        if "error" in ages:
+            out["n1_frame"]["errors"] = ages.error.value_counts().to_dict()
+        print(
+            f"\nN1 frame: {eligible:,} of {len(got):,} resolved repositories predate "
+            f"{LLM_CUTOFF} ({out['n1_frame']['eligible_pct']}%)"
+        )
+    else:
+        print(f"\nN1 frame: not measured (run verify_repo_ages.py)")
 
     # --- Stratification variables --------------------------------------------
     repos = load("repository")

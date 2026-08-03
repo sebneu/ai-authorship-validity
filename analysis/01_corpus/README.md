@@ -65,15 +65,34 @@ Two further facts worth carrying into RQ2:
 ## 2. Sampling frame
 
 The 2,807 curated repositories, restricted to those existing before the cutoff.
+**Measured over all of them** by `verify_repo_ages.py` (2026-08-03):
 
-**Repo age check (25 sampled, GitHub API): 71% were created before 2022-11-30.** So the
-same-repo design covers roughly **2,000 repositories**; the remaining ~29% are too young
-to have a pre-LLM history at all.
+| | Count | |
+|---|---|---|
+| Queried | 2,807 | curated frame |
+| Resolved on GitHub | 2,779 | 26 deleted/renamed (404), 2 legally withheld (451) |
+| **Created before 2022-11-30** | **1,714** | **61.7% — the N1 frame** |
+| Excluded | 1,093 | too young, or unresolvable |
 
-Those excluded repos are not missing at random — they are newer, and newer projects
-skew toward agent adoption. The exclusion is reported, and RQ1 carries a
-cross-repo generalisation check on the excluded set (positives only, no matched
-negatives) to show results do not hinge on repo age.
+Repo creation spans 2008-03-06 to 2026-08-03. Among the 1,714 eligible, 20 are archived
+and 15 are forks — flag both, since archived projects stopped receiving contributions
+and forks duplicate upstream text.
+
+**This is materially worse than the 25-repo pilot suggested (71%).** The frame is ~290
+repositories smaller than the design assumed, which costs power in the matched analysis
+and makes the per-stratum FPR targets in §4 harder to hit. Budget for it rather than
+discovering it at analysis time.
+
+The excluded repositories are not missing at random — they are newer, and newer projects
+plausibly skew toward agent adoption. RQ1 therefore carries a cross-repo generalisation
+check on the excluded set (positives only, no matched negatives).
+
+**Names are not identifiers.** Seven repositories have a GitHub `created_at` *later than
+AIDev's own observation window closed*, meaning the name now points at a different
+project than AIDev saw. A 30-repository sample of the eligible set matched AIDev's
+numeric ids 30/30, so the problem looks confined to those seven — but `verify_repo_ages.py`
+now checks the id on every repository and drops mismatches regardless of age, so the
+next run makes this exhaustive rather than sampled.
 
 ---
 
@@ -199,9 +218,9 @@ fields — the harness reads `text` only, and scores join back on `id`.
 
 ## 7. Open items before freezing
 
-1. **Run `verify_repo_ages.py`** to replace the 25-repo estimate (~71%) with the measured
-   share over all 2,807, and to emit the eligible-repository list that the N1 builder
-   consumes. Needs `GITHUB_TOKEN` in the environment; ~12 min at 4 workers.
+1. ~~Verify repo ages over the full frame~~ — **done 2026-08-03**: 1,714 eligible
+   (61.7%), written to `data/processed/repo_ages.parquet`. Re-run once to populate the
+   new `github_id` identity check across the whole frame.
 2. Fix the bot-account list; decide whether GitHub's `user_type == 'Bot'` is sufficient
    or whether BoDeGHa-style classification is needed for pre-2022 accounts.
 3. Confirm GH Archive cross-check passes, or promote GH Archive to primary.
