@@ -85,6 +85,17 @@ def write_tex(path: Path, out: dict) -> None:
         "RepoStarsMedian": f"{out['repository']['stars']['median']:,}",
         "LlmCutoff": out["llm_cutoff"],
     }
+    if "positives" in out:
+        p = out["positives"]
+        macros.update(
+            {
+                "PositiveTexts": f"{p['rows']:,}",
+                "PositiveCells": str(p["cells"]),
+                "PrBodyMedianPopulation": f"{p['pr_body_median_population']:,}",
+                "PrBodyMedianSampled": f"{p['pr_body_median_sampled']:,}",
+            }
+        )
+
     if "n1_frame" in out:
         n1 = out["n1_frame"]
         macros.update(
@@ -240,6 +251,27 @@ def main() -> int:
         )
     else:
         print(f"\nN1 frame: not measured (run verify_repo_ages.py)")
+
+    # --- Sampled positive set, if build_positives.py has been run -------------
+    pos_path = ROOT / "data" / "processed" / "corpus_v1" / "positives.parquet"
+    if pos_path.exists():
+        pos = pd.read_parquet(pos_path)
+        pr_pop = int(prs.body.fillna("").str.len()[prs.body.notna()].median())
+        pr_sample = int(pos.loc[pos.genre == "pr_body", "n_chars"].median())
+        out["positives"] = {
+            "rows": len(pos),
+            "cells": int(pos.groupby(["agent", "genre"]).ngroups),
+            "median_by_genre": {
+                g: int(grp.n_chars.median()) for g, grp in pos.groupby("genre")
+            },
+            # Equal allocation deliberately departs from the population mix, which
+            # shifts the length distribution. Disclosed rather than discovered later.
+            "pr_body_median_population": pr_pop,
+            "pr_body_median_sampled": pr_sample,
+            "boilerplate_pct": round(100 * pos.has_boilerplate.mean(), 1),
+        }
+        print(f"\npositives: {len(pos):,} texts across {out['positives']['cells']} cells")
+        print(f"  pr_body median: {pr_pop} population -> {pr_sample} sampled")
 
     # --- Stratification variables --------------------------------------------
     repos = load("repository")

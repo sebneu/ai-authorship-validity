@@ -81,7 +81,26 @@ Allocation across the resulting agent-by-genre cells is equal rather than propor
 targeting 1{,}000 texts per cell with a floor of 300. Equal allocation sacrifices
 precision on the most abundant agent to obtain usable precision on the least abundant,
 which is the correct trade when the question is whether detector behaviour generalises
-across agents rather than what its average is.
+across agents rather than what its average is. The sampled positive set contains
+\PositiveTexts{} texts across \PositiveCells{} cells.
+
+\paragraph{What equal allocation costs.} Because agents differ so much in verbosity,
+reweighting them equally changes the corpus itself: the median pull request body rises
+from \PrBodyMedianPopulation{} characters in the population to
+\PrBodyMedianSampled{} in the sample. The sampled corpus is therefore deliberately
+\emph{not} representative of the population of agent contributions, and no prevalence
+claim is made from it --- it exists to estimate per-stratum detector error, which
+Section~\ref{sec:correction} then applies to representative samples. Reporting this
+explicitly matters because the same reweighting, left undisclosed, would make detectors
+look better than they are: longer texts are easier to classify.
+
+\paragraph{One genre cannot support per-agent analysis.} Issue bodies are linked to
+agent authorship only through AIDev's issue--pull-request link table, and the resulting
+cells are thin: three of the five agents fall below the floor of 300, two of them below
+200. Issue bodies are therefore analysed pooled across agents, and per-agent claims are
+restricted to the other four genres. This is a limitation of the available attribution
+data rather than of the design, and we report it rather than quietly padding the cells
+from a proportional draw.
 
 \subsection{Negative sets}
 \label{sec:groundtruth:negatives}

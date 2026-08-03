@@ -40,6 +40,7 @@ TABLES = {
     "pr_commits": "commit messages without patches (lighter alternative)",
     "pr_comments": "PR comment bodies; carries user_type for bot separation",
     "issue": "agent-linked issue titles + bodies (issue genre)",
+    "related_issue": "issue <-> PR link table; the issue table has no agent column",
     # Contemporaneous human control.
     "human_pull_request": "6.6k human-authored PRs, same era and repos",
     # Stratification and identity.
@@ -108,6 +109,15 @@ def main() -> int:
 
     MANIFEST_DIR.mkdir(parents=True, exist_ok=True)
     manifest_path = MANIFEST_DIR / f"aidev_{resolved[:12]}.json"
+
+    # Merge rather than overwrite: downloading one extra table must not erase the
+    # provenance record of the tables already fetched at this revision.
+    merged = {e["table"]: e for e in entries}
+    if manifest_path.exists():
+        prior = json.loads(manifest_path.read_text())
+        for entry in prior.get("files", []):
+            merged.setdefault(entry["table"], entry)
+
     manifest_path.write_text(
         json.dumps(
             {
@@ -115,7 +125,7 @@ def main() -> int:
                 "revision": resolved,
                 "hub_last_modified": str(info.lastModified),
                 "downloaded": datetime.now(UTC).isoformat(),
-                "files": entries,
+                "files": [merged[k] for k in sorted(merged)],
             },
             indent=2,
         )

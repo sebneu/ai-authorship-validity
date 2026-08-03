@@ -124,8 +124,34 @@ any detector runs.
 **Allocation: equal per agent, not proportional.** Target n = 1,000 per (agent × genre),
 floor 300, capped by availability. Equal allocation costs precision on Codex and buys it
 on Claude Code — the right trade when the question is whether detectors generalise
-*across* agents. The binding cells are Claude Code comments (428) and Cursor comments
-(523); both clear the floor, so no cell is dropped.
+*across* agents.
+
+**Built 2026-08-03** by `build_positives.py` (seed 7): **20,650 texts across 25 cells**.
+
+| genre | Claude Code | Copilot | Cursor | Devin | Codex |
+|---|---|---|---|---|---|
+| pr_body | 1,000 | 1,000 | 1,000 | 1,000 | 1,000 |
+| commit_message | 1,000 | 1,000 | 1,000 | 1,000 | 1,000 |
+| diff | 1,000 | 1,000 | 1,000 | 1,000 | 1,000 |
+| comment | **423** | 1,000 | **507** | 1,000 | 1,000 |
+| issue_body | **98** | 1,000 | **60** | **380** | **182** |
+
+Two consequences, both of which must reach the paper:
+
+1. **`issue_body` cannot support per-agent analysis.** Issues are attributed only via
+   AIDev's `related_issue` link table (4,923 links), and three of five agent cells fall
+   below the floor of 300 — two below 200. Analyse this genre pooled across agents; keep
+   per-agent claims to the other four.
+2. **Equal allocation shifts the corpus.** Median `pr_body` length goes from 295 chars
+   in the population to 806 in the sample, because reweighting upweights the verbose
+   agents. The sampled positive set is therefore deliberately *not* representative, and
+   no prevalence claim may be made from it. Undisclosed, this would flatter the
+   detectors: longer text is easier to classify.
+
+**Boilerplate confound: measured, and small.** Workflow boilerplate appears in 0.9% of
+N1 commit messages and 0.0% of positive ones. The asymmetry is real but too small to
+drive results, so rows are flagged (`has_boilerplate`) rather than stripped, and a
+sensitivity check excluding them is reported alongside the headline numbers.
 
 ---
 

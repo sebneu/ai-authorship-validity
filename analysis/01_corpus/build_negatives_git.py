@@ -35,6 +35,7 @@ from pathlib import Path
 import pandas as pd
 
 from _github import read_token
+from _text import BOT_PATTERNS, strip_trailers
 
 ROOT = Path(__file__).resolve().parents[2]
 AGES = ROOT / "data" / "processed" / "repo_ages.parquet"
@@ -50,51 +51,6 @@ CUTOFF_UTC = pd.Timestamp("2022-11-30T00:00:00Z")
 SEP = "\x1f"
 REC = "\x1e"
 LOG_FORMAT = SEP.join(["%H", "%cI", "%aI", "%an", "%ae", "%P", "%B"]) + REC
-
-# Trailer lines are explicit declarations. They are stripped and never scored:
-# recovering a declaration is not detection, and leaving them in would let a detector
-# "identify" authorship by reading a label.
-#
-# Trailers do not reliably sit at the start of a line. They appear indented inside
-# squashed-merge bodies, and appended mid-sentence by tools that do not add a newline
-# first, so anchoring to line starts alone misses them.
-# Written with "-" as the word separator and expanded below to accept a space too:
-# the hyphenated git convention and Phabricator's "Reviewed By:" are the same trailer.
-# The Co- prefix is optional -- bare "Authored-by:" is the pair-programming convention
-# at several shops and is just as much a declaration.
-_TRAILER_WORDS = (
-    "co?-authored-by|signed-off-by|reviewed-by|acked-by|tested-by|helped-by|"
-    "reported-by|suggested-by|generated-by|assisted-by|noticed-by|co-developed-by|"
-    "co-committed-by|on-behalf-of|pull-request-author"
-)
-TRAILER_NAMES = _TRAILER_WORDS.replace("-", "[-\\s]").replace("co?[-\\s]", "(?:co[-\\s]?)?")
-TRAILER = re.compile(rf"^\s*(?:{TRAILER_NAMES}):", re.IGNORECASE)
-TRAILER_INLINE = re.compile(rf"\s*(?:{TRAILER_NAMES}):.*$", re.IGNORECASE)
-
-
-def strip_trailers(message: str) -> tuple[str, bool]:
-    """Remove trailer declarations. Returns (text a detector sees, had_trailer)."""
-    kept, found = [], False
-    for line in message.splitlines():
-        if TRAILER.match(line):
-            found = True
-            continue  # whole line is a declaration
-        cleaned = TRAILER_INLINE.sub("", line)
-        if cleaned != line:
-            found = True
-        if cleaned.strip():
-            kept.append(cleaned)
-    return "\n".join(kept).strip(), found
-
-# Automation accounts, identified from the commit author. These become N3 (pre-LLM
-# machine-generated text) rather than being discarded -- quantifying how often
-# detectors flag them is the point of N3.
-BOT_PATTERNS = re.compile(
-    r"(\[bot\]|dependabot|renovate|greenkeeper|snyk-bot|imgbot|allcontributors|"
-    r"github-actions|semantic-release|release-please|mergify|pyup|whitesource|"
-    r"scala-steward|depfu|codecov|travis|appveyor|circleci)",
-    re.IGNORECASE,
-)
 
 MERGE_SUBJECT = re.compile(r"^(Merge (pull request|branch|remote-tracking|commit)\b|Merge tag\b)")
 
