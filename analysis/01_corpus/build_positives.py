@@ -30,7 +30,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from _text import has_boilerplate, strip_trailers
+from _text import EXCLUDE_PATH, has_boilerplate, strip_trailers
 
 ROOT = Path(__file__).resolve().parents[2]
 RAW = ROOT / "data" / "raw" / "aidev"
@@ -89,9 +89,18 @@ def commit_messages(agent_of: pd.Series) -> pd.DataFrame:
 
 def diffs(agent_of: pd.Series) -> pd.DataFrame:
     """One row per changed file: DetectCodeGPT expects contiguous code, not a
-    multi-file patch, and per-file keeps language attribution meaningful."""
+    multi-file patch, and per-file keeps language attribution meaningful.
+
+    Generated and vendored files are excluded with the same rule applied to the
+    negative side. Lockfiles and minified bundles are machine-written on both sides,
+    so keeping them here while dropping them there would leave the classes separable
+    by file type rather than by authorship.
+    """
     df = load("pr_commit_details", ["sha", "pr_id", "patch", "filename"])
     df = df[df.patch.notna()].join(agent_of, on="pr_id", how="inner")
+    before = len(df)
+    df = df[~df.filename.fillna("").str.contains(EXCLUDE_PATH)]
+    print(f"    dropped {before - len(df):,} generated/vendored files")
     return pd.DataFrame(
         {
             "source_id": df.sha.astype(str) + ":" + df.filename.astype(str),

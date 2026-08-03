@@ -48,6 +48,20 @@ BOILERPLATE = re.compile(
 )
 
 
+# Generated, vendored or binary content. Machine-written but not model-written, and
+# present on both sides of the corpus, so it is excluded from both. Applied to one side
+# only it would leave the classes separable by file type rather than by authorship.
+EXCLUDE_PATH = re.compile(
+    r"(^|/)(node_modules|vendor|third_party|thirdparty|externals|dist|build|"
+    r"generated|__generated__|\.min\.|migrations)/|"
+    r"(package-lock\.json|yarn\.lock|pnpm-lock\.yaml|poetry\.lock|Cargo\.lock|"
+    r"composer\.lock|Gemfile\.lock|go\.sum|\.pbxproj|\.snap)$|"
+    r"\.(min\.js|min\.css|map|lock|svg|png|jpg|jpeg|gif|ico|pdf|woff2?|ttf|eot|"
+    r"zip|gz|jar|so|dll|dylib|exe|bin|class|pyc|out|error|bench)$",
+    re.IGNORECASE,
+)
+
+
 def strip_trailers(message: str) -> tuple[str, bool]:
     """Remove trailer declarations. Returns (text a detector sees, had_trailer)."""
     kept, found = [], False

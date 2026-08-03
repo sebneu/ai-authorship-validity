@@ -207,15 +207,18 @@ def main() -> int:
     print(f"\nnegatives available: {len(negatives):,}")
     print(negatives.groupby(["set", "genre"]).size().to_string())
 
-    # N1 carries the counterfactual false positive rate, so it is capped per genre at
-    # the precision target rather than at whatever happens to have been collected.
+    # Match from the full pool, before any capping. Capping first would hand the
+    # matcher a random 5,000-row sample and throw away exactly the language and length
+    # coverage the targeted collection was run to obtain.
+    matched, deficits = match_lengths(pos, negatives[negatives.set == "N1"], args.seed)
+
+    # The cap applies only to the unmatched copy, which carries the raw counterfactual
+    # false positive rate and needs the precision target rather than every row held.
     capped = []
     for (nset, genre), grp in negatives.groupby(["set", "genre"]):
         take = min(args.per_genre, len(grp))
         capped.append(grp.sample(take, random_state=args.seed) if take < len(grp) else grp)
     negatives = pd.concat(capped, ignore_index=True)
-
-    matched, deficits = match_lengths(pos, negatives[negatives.set == "N1"], args.seed)
     matched["matched"] = True
     unmatched = negatives.copy()
     unmatched["matched"] = False

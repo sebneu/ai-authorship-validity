@@ -36,6 +36,7 @@ from pathlib import Path
 import pandas as pd
 
 from _github import read_token
+from _text import EXCLUDE_PATH
 from build_negatives_git import CREDENTIAL_HELPER, RATE_LIMITED, run
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -54,17 +55,6 @@ EXT_TO_LANGUAGE = {
     "php": "PHP", "swift": "Swift", "scala": "Scala", "dart": "Dart", "ex": "Elixir",
 }
 
-# Machine-generated or third-party content. Present in history, but not human-written
-# prose or code, and not model-written either.
-EXCLUDE_PATH = re.compile(
-    r"(^|/)(node_modules|vendor|third_party|thirdparty|externals|dist|build|"
-    r"generated|__generated__|\.min\.|migrations)/|"
-    r"(package-lock\.json|yarn\.lock|pnpm-lock\.yaml|poetry\.lock|Cargo\.lock|"
-    r"composer\.lock|Gemfile\.lock|go\.sum|\.pbxproj|\.snap)$|"
-    r"\.(min\.js|min\.css|map|lock|svg|png|jpg|jpeg|gif|ico|pdf|woff2?|ttf|eot|"
-    r"zip|gz|jar|so|dll|dylib|exe|bin|class|pyc)$",
-    re.IGNORECASE,
-)
 
 DIFF_HEADER = re.compile(r"^diff --git a/(.+?) b/(.+)$")
 
