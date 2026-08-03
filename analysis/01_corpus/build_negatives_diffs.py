@@ -41,6 +41,18 @@ from build_negatives_git import CREDENTIAL_HELPER, RATE_LIMITED, run
 ROOT = Path(__file__).resolve().parents[2]
 OUT_DIR = ROOT / "data" / "processed" / "corpus_v1"
 COMMITS = OUT_DIR / "n1_commits.parquet"
+RAW = ROOT / "data" / "raw" / "aidev"
+CORPUS = OUT_DIR
+
+# GitHub reports one primary language per repository; the corpus is matched on file
+# extension. This maps the extensions that carry the positive diff set back to the
+# repository language most likely to contain them.
+EXT_TO_LANGUAGE = {
+    "ts": "TypeScript", "tsx": "TypeScript", "js": "JavaScript", "jsx": "JavaScript",
+    "py": "Python", "go": "Go", "rs": "Rust", "java": "Java", "kt": "Kotlin",
+    "cs": "C#", "cpp": "C++", "cc": "C++", "h": "C++", "c": "C", "rb": "Ruby",
+    "php": "PHP", "swift": "Swift", "scala": "Scala", "dart": "Dart", "ex": "Elixir",
+}
 
 # Machine-generated or third-party content. Present in history, but not human-written
 # prose or code, and not model-written either.
@@ -154,6 +166,8 @@ def main() -> int:
     ap.add_argument("--repos", type=int, default=400, help="repositories to sample")
     ap.add_argument("--commits", type=int, default=20, help="commits sampled per repository")
     ap.add_argument("--workers", type=int, default=4)
+    ap.add_argument("--match-languages", action="store_true",
+                    help="weight the repository draw toward the positive language mix")
     ap.add_argument("--seed", type=int, default=7)
     ap.add_argument("--out", type=Path, default=OUT_DIR / "n1_diffs.parquet")
     args = ap.parse_args()
@@ -165,9 +179,49 @@ def main() -> int:
     # Merge commits carry no diff of their own; bot commits belong to N3.
     commits = commits[~commits.is_bot & ~commits.is_merge]
 
-    rng = commits.repo.drop_duplicates().sample(
-        min(args.repos, commits.repo.nunique()), random_state=args.seed
-    )
+    repos_available = commits.repo.drop_duplicates()
+
+    if args.match_languages:
+        # Random repository sampling gives an N1 diff set skewed to older stacks:
+        # HTML and C++ where the positives are TypeScript and Python. Matching cannot
+        # fix at selection time what was never collected, so bias the repository draw
+        # toward the languages the positive set actually contains.
+        meta = pd.read_parquet(RAW / "repository.parquet", columns=["full_name", "language"])
+        pos = pd.read_parquet(CORPUS / "positives.parquet", columns=["genre", "filename"])
+        wanted = (
+            pos[pos.genre == "diff"]
+            .filename.dropna()
+            .str.rsplit(".", n=1)
+            .str[-1]
+            .str.lower()
+            .map(EXT_TO_LANGUAGE)
+            .dropna()
+            .value_counts(normalize=True)
+        )
+        meta = meta[meta.full_name.isin(repos_available)]
+        # Stratified rather than weighted: draw a quota per language. Weighted sampling
+        # without replacement fails once the weights are this skewed, and quotas make
+        # the resulting composition explicit instead of probabilistic.
+        picks: list[str] = []
+        for language, share in wanted.items():
+            pool = meta[meta.language == language].full_name
+            quota = min(int(round(share * args.repos)), len(pool))
+            if quota:
+                picks.extend(pool.sample(quota, random_state=args.seed).tolist())
+        # Top up from anywhere if the quotas could not fill the request.
+        if len(picks) < args.repos:
+            rest = meta[~meta.full_name.isin(picks)].full_name
+            extra = min(args.repos - len(picks), len(rest))
+            if extra:
+                picks.extend(rest.sample(extra, random_state=args.seed).tolist())
+        rng = pd.Series(picks)
+        print("language-stratified repository draw:")
+        print(meta[meta.full_name.isin(rng)].language.value_counts().head(8).to_string())
+        print()
+    else:
+        rng = repos_available.sample(
+            min(args.repos, repos_available.nunique()), random_state=args.seed
+        )
     picked = commits[commits.repo.isin(rng)]
     # Shuffle once, then take the first N rows per repository: same effect as sampling
     # within each group, without the groupby-apply column-handling pitfalls.

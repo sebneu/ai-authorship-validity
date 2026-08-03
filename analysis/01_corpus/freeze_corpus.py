@@ -82,11 +82,22 @@ def load_n1_api() -> pd.DataFrame:
 
 
 def load_n1_diffs() -> pd.DataFrame:
-    path = CORPUS / "n1_diffs.parquet"
-    if not path.exists():
-        print(f"note: {path.name} not present, skipping diff negatives")
+    """Diffs from both the random and the language-weighted repository draws.
+
+    The random draw alone left the TypeScript and Python bins short, because pre-LLM
+    history in these repositories runs to older stacks. The second draw targets the
+    languages the positive set contains; the two are pooled and deduplicated.
+    """
+    frames = []
+    for name in ("n1_diffs.parquet", "n1_diffs_lang.parquet"):
+        path = CORPUS / name
+        if path.exists():
+            frames.append(pd.read_parquet(path))
+        elif name == "n1_diffs.parquet":
+            print(f"note: {name} not present, skipping diff negatives")
+    if not frames:
         return pd.DataFrame(columns=COLUMNS)
-    df = pd.read_parquet(path)
+    df = pd.concat(frames, ignore_index=True).drop_duplicates(subset="source_id")
     df["set"] = "N1"
     df["agent"] = None
     df["label"] = 0
@@ -155,7 +166,10 @@ def match_lengths(
                                "wanted": int(len(pos_s)), "got": 0,
                                "note": "no negatives in this language"})
                 continue
-            edges = pos_s.n_chars.quantile([i / DECILES for i in range(DECILES + 1)]).values
+            edges = pos_s.n_chars.quantile(
+                [i / DECILES for i in range(DECILES + 1)]
+            ).to_numpy(copy=True)
+            # Widen the outer edges so no text falls outside the bins.
             edges[0], edges[-1] = -1, float("inf")
             pos_bins = pd.cut(pos_s.n_chars, bins=edges, duplicates="drop")
             neg_bins = pd.cut(neg_s.n_chars, bins=edges, duplicates="drop")
