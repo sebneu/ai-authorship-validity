@@ -1,0 +1,59 @@
+# --- Planning notes / instructions (local only) ---
+instructions/
+
+# --- Data (document provenance in data/README.md, never commit payloads) ---
+data/*
+!data/README.md
+
+# --- macOS ---
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- Models / caches ---
+.cache/
+*.pt
+*.safetensors
+
+# --- LaTeX build artifacts ---
+*.aux
+*.bbl
+*.blg
+*.brf
+*.fdb_latexmk
+*.fls
+*.idx
+*.ilg
+*.ind
+*.lof
+*.log
+*.lot
+*.nav
+*.out
+*.snm
+*.synctex.gz
+*.toc
+*.vrb
+*.run.xml
+*.bcf
+*.xdv
+paper/**/*.pdf
+!paper/figures/**/*.pdf
+
+# --- Editors ---
+.idea/
+.vscode/
+*.swp
