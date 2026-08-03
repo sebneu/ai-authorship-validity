@@ -151,6 +151,37 @@ The rule is conservative — an old issue touched by a label change is dropped �
 biases N1 toward *quiescent* artifacts. That is a real confound with register and
 length, so N1 is length-matched (below) and the quiescence bias is stated in threats.
 
+**Collected 2026-08-03** by `build_negatives_git.py`: **1,487,849 usable commit messages**
+from 1,696 of the 1,714 eligible repositories, spanning 2005–2022, median 41 characters.
+Separately flagged rather than discarded: 92,127 bot-authored (these become N3) and
+228,407 merge commits. The 17 repositories with no rows were created before the cutoff
+but have no pre-cutoff commits — imported or rewritten history, not a collection failure.
+
+Three things that had to be fixed, each of which would have silently contaminated N1:
+
+1. **`git log --before` is not a UTC filter.** It compares each commit against its own
+   local timezone, so commits on the cutoff day pass. It admitted 4,523 post-cutoff
+   commits across the runs. The boundary is now applied in code, in UTC, and requires
+   *both* committer and author timestamps to clear it — clock skew can order them
+   inconsistently. The purity of N1 is the basis of the whole counterfactual, so it
+   cannot be delegated to a tool's date parsing.
+2. **Anonymous clones are rate limited** at roughly 1,200 repositories per IP, after
+   which GitHub demands credentials and git reports the misleading `expected flush after
+   ref listing`. This cost 26% of the frame on the first run and looked like missing
+   repositories. Clones are now authenticated.
+3. **Trailers do not sit neatly at line starts.** They appear indented, appended
+   mid-sentence, without the `Co-` prefix (`Authored-by:`), and with spaces instead of
+   hyphens (Phabricator's `Reviewed By:`). Three successive fixes were needed to reach
+   zero leakage. This matters more than its size suggests: a trailer left in the scored
+   text lets a detector "detect" authorship by reading a label.
+
+**Known confound, not yet resolved.** Pre-2022 corpora contain templated workflow
+boilerplate with no analogue in the 2025 positives — Phabricator blocks (`Summary:`,
+`Differential Revision:`), Gerrit `Change-Id` lines. If it stays, a detector can learn
+"boilerplate implies old implies human", which is an era marker rather than an
+authorship signal. Quantify its prevalence before freezing and decide whether to strip
+it, and report the sensitivity of results either way.
+
 Acquisition per genre:
 
 - **Commit messages and diffs:** `git clone --filter=blob:none`, then `git log`/`git show`

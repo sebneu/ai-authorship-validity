@@ -22,8 +22,10 @@ from __future__ import annotations
 
 import argparse
 import re
+import os
 import shutil
 import subprocess
+import time
 import sys
 import tempfile
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -31,6 +33,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 import pandas as pd
+
+from _github import read_token
 
 ROOT = Path(__file__).resolve().parents[2]
 AGES = ROOT / "data" / "processed" / "repo_ages.parquet"
@@ -47,14 +51,40 @@ SEP = "\x1f"
 REC = "\x1e"
 LOG_FORMAT = SEP.join(["%H", "%cI", "%aI", "%an", "%ae", "%P", "%B"]) + REC
 
-# Trailer lines are explicit declarations. They are split out and never scored:
+# Trailer lines are explicit declarations. They are stripped and never scored:
 # recovering a declaration is not detection, and leaving them in would let a detector
-# "identify" AI authorship by reading a label.
-TRAILER = re.compile(
-    r"^(Co-authored-by|Signed-off-by|Reviewed-by|Acked-by|Tested-by|Helped-by|"
-    r"Reported-by|Suggested-by|Generated-by|Assisted-by):",
-    re.IGNORECASE | re.MULTILINE,
+# "identify" authorship by reading a label.
+#
+# Trailers do not reliably sit at the start of a line. They appear indented inside
+# squashed-merge bodies, and appended mid-sentence by tools that do not add a newline
+# first, so anchoring to line starts alone misses them.
+# Written with "-" as the word separator and expanded below to accept a space too:
+# the hyphenated git convention and Phabricator's "Reviewed By:" are the same trailer.
+# The Co- prefix is optional -- bare "Authored-by:" is the pair-programming convention
+# at several shops and is just as much a declaration.
+_TRAILER_WORDS = (
+    "co?-authored-by|signed-off-by|reviewed-by|acked-by|tested-by|helped-by|"
+    "reported-by|suggested-by|generated-by|assisted-by|noticed-by|co-developed-by|"
+    "co-committed-by|on-behalf-of|pull-request-author"
 )
+TRAILER_NAMES = _TRAILER_WORDS.replace("-", "[-\\s]").replace("co?[-\\s]", "(?:co[-\\s]?)?")
+TRAILER = re.compile(rf"^\s*(?:{TRAILER_NAMES}):", re.IGNORECASE)
+TRAILER_INLINE = re.compile(rf"\s*(?:{TRAILER_NAMES}):.*$", re.IGNORECASE)
+
+
+def strip_trailers(message: str) -> tuple[str, bool]:
+    """Remove trailer declarations. Returns (text a detector sees, had_trailer)."""
+    kept, found = [], False
+    for line in message.splitlines():
+        if TRAILER.match(line):
+            found = True
+            continue  # whole line is a declaration
+        cleaned = TRAILER_INLINE.sub("", line)
+        if cleaned != line:
+            found = True
+        if cleaned.strip():
+            kept.append(cleaned)
+    return "\n".join(kept).strip(), found
 
 # Automation accounts, identified from the commit author. These become N3 (pre-LLM
 # machine-generated text) rather than being discarded -- quantifying how often
@@ -70,32 +100,56 @@ MERGE_SUBJECT = re.compile(r"^(Merge (pull request|branch|remote-tracking|commit
 
 
 def run(cmd: list[str], cwd: Path | None = None, timeout: int = 900) -> tuple[int, str, str]:
+    env = dict(os.environ)
+    # Never let git block on an interactive credential prompt inside a worker thread.
+    env["GIT_TERMINAL_PROMPT"] = "0"
     proc = subprocess.run(
-        cmd, cwd=cwd, capture_output=True, text=True, timeout=timeout, errors="replace"
+        cmd, cwd=cwd, capture_output=True, text=True, timeout=timeout,
+        errors="replace", env=env,
     )
     return proc.returncode, proc.stdout, proc.stderr
 
 
-def clone(full_name: str, dest: Path) -> str | None:
+# Anonymous clones are rate limited per IP. Once the budget is spent GitHub starts
+# demanding credentials, and git reports the misleading "expected flush after ref
+# listing" rather than an auth error. Authenticating raises the ceiling enough to walk
+# the whole frame; this pattern is how we detect the condition and back off.
+RATE_LIMITED = ("expected flush after ref listing", "could not read Username")
+
+# The token reaches git through a credential helper reading the environment, so it
+# never appears in argv (visible to any user via ps) or in a URL.
+CREDENTIAL_HELPER = (
+    "!f() { echo username=x-access-token; echo \"password=$GH_CLONE_TOKEN\"; }; f"
+)
+
+
+def clone(full_name: str, dest: Path, token: str | None, attempts: int = 3) -> str | None:
     """Bare, commit-graph-only clone. Returns an error string or None."""
-    if dest.exists():
-        shutil.rmtree(dest, ignore_errors=True)
-    code, _, err = run(
-        [
-            "git",
-            "clone",
-            "--bare",
-            "--filter=tree:0",
-            "--no-tags",
-            "--quiet",
-            f"https://github.com/{full_name}.git",
-            str(dest),
-        ]
-    )
-    if code != 0:
-        first = err.strip().splitlines()[-1] if err.strip() else f"exit_{code}"
-        return first[:120]
-    return None
+    cmd = ["git"]
+    if token:
+        cmd += ["-c", f"credential.helper={CREDENTIAL_HELPER}"]
+    cmd += [
+        "clone",
+        "--bare",
+        "--filter=tree:0",
+        "--no-tags",
+        "--quiet",
+        f"https://github.com/{full_name}.git",
+        str(dest),
+    ]
+
+    for attempt in range(attempts):
+        if dest.exists():
+            shutil.rmtree(dest, ignore_errors=True)
+        code, _, err = run(cmd)
+        if code == 0:
+            return None
+        text = err.strip()
+        if any(marker in text for marker in RATE_LIMITED) and attempt < attempts - 1:
+            time.sleep(5 * (attempt + 1))
+            continue
+        return (text.splitlines()[-1] if text else f"exit_{code}")[:120]
+    return "rate_limited"
 
 
 def parse_log(raw: str, full_name: str) -> list[dict]:
@@ -109,12 +163,7 @@ def parse_log(raw: str, full_name: str) -> list[dict]:
             continue
         sha, cdate, adate, name, email, parents, body = parts
 
-        message = body.strip("\n")
-        trailers = TRAILER.findall(message)
-        # Keep only the text a detector would see: drop trailer lines entirely.
-        scored = "\n".join(
-            line for line in message.splitlines() if not TRAILER.match(line)
-        ).strip()
+        scored, had_trailer = strip_trailers(body.strip("\n"))
         subject = scored.splitlines()[0] if scored.splitlines() else ""
 
         author = f"{name} <{email}>"
@@ -130,16 +179,16 @@ def parse_log(raw: str, full_name: str) -> list[dict]:
                 "n_lines": len(scored.splitlines()),
                 "is_merge": bool(len(parents.split()) > 1 or MERGE_SUBJECT.match(subject)),
                 "is_bot": bool(BOT_PATTERNS.search(author)),
-                "had_trailer": bool(trailers),
+                "had_trailer": had_trailer,
                 "genre": "commit_message",
             }
         )
     return rows
 
 
-def collect(full_name: str, workdir: Path, max_commits: int, keep: bool) -> dict:
+def collect(full_name: str, workdir: Path, max_commits: int, keep: bool, token: str | None) -> dict:
     dest = workdir / full_name.replace("/", "__")
-    err = clone(full_name, dest)
+    err = clone(full_name, dest, token)
     if err:
         return {"repo": full_name, "error": err, "rows": []}
 
@@ -176,6 +225,8 @@ def main() -> int:
         help="cap per repository so large projects do not dominate the corpus",
     )
     ap.add_argument("--keep-clones", action="store_true")
+    ap.add_argument("--resume", action="store_true",
+                    help="skip repositories already in the output and append")
     ap.add_argument("--out", type=Path, default=OUT_DIR / "n1_commits.parquet")
     args = ap.parse_args()
 
@@ -186,6 +237,22 @@ def main() -> int:
     repos = ages[ages.eligible_for_n1].full_name.tolist()
     if args.limit:
         repos = repos[: args.limit]
+
+    # Authenticated clones get a far higher ceiling than anonymous ones, which run out
+    # after roughly 1,200 repositories and then fail as confusing auth errors.
+    token = read_token()
+    if token:
+        os.environ["GH_CLONE_TOKEN"] = token
+        print("cloning authenticated")
+    else:
+        print("cloning anonymously -- expect rate limiting after ~1,200 repositories")
+
+    existing = pd.DataFrame()
+    if args.resume and args.out.exists():
+        existing = pd.read_parquet(args.out)
+        have = set(existing.repo.unique())
+        repos = [r for r in repos if r not in have]
+        print(f"resuming: {len(have):,} repositories already collected, {len(repos):,} to go")
 
     if "identity_ok" in ages and ages.identity_ok.notna().any():
         print("repository identity verified by GitHub id")
@@ -205,7 +272,7 @@ def main() -> int:
 
     with ThreadPoolExecutor(max_workers=args.workers) as pool:
         futures = {
-            pool.submit(collect, r, workdir, args.max_commits, args.keep_clones): r
+            pool.submit(collect, r, workdir, args.max_commits, args.keep_clones, token): r
             for r in repos
         }
         for i, future in enumerate(as_completed(futures), 1):
@@ -228,7 +295,7 @@ def main() -> int:
     if not args.keep_clones:
         shutil.rmtree(workdir, ignore_errors=True)
 
-    if not all_rows:
+    if not all_rows and not len(existing):
         print("\nno commits collected", file=sys.stderr)
         for f in failures[:10]:
             print(f"  {f['repo']}: {f['error']}", file=sys.stderr)
@@ -248,6 +315,9 @@ def main() -> int:
     leaked = before - len(df)
     if leaked:
         print(f"\ndropped {leaked:,} commits at or after {CUTOFF_UTC.date()} (UTC boundary)")
+
+    if len(existing):
+        df = pd.concat([existing, df], ignore_index=True)
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
     df.to_parquet(args.out, index=False)

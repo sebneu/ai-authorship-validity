@@ -149,9 +149,13 @@ def main() -> int:
     df.to_parquet(args.out, index=False)
 
     errors = df.error.notna().sum() if "error" in df else 0
-    pct = 100 * eligible.mean() if len(resolved) else 0.0
+    # Report the column that downstream scripts actually read, which is age AND
+    # identity, rather than the age test alone.
+    final = int(df.eligible_for_n1.sum())
+    pct = 100 * final / len(resolved) if len(resolved) else 0.0
     print(f"\nresolved      : {len(resolved):,} of {len(df):,} ({errors:,} unresolvable)")
-    print(f"pre-{LLM_CUTOFF.date()} : {int(eligible.sum()):,} ({pct:.1f}%) -- the N1 frame")
+    print(f"pre-{LLM_CUTOFF.date()} : {int(eligible.sum()):,} by age")
+    print(f"N1 frame      : {final:,} ({pct:.1f}%) after the identity check")
     if len(resolved):
         print(f"created range : {created.min().date()} -> {created.max().date()}")
         print("by year       :", created.dt.year.value_counts().sort_index().to_dict())
