@@ -21,6 +21,7 @@ pyarrow==25.0.0
 numpy==2.5.1
 scikit-learn==1.5.2      # fingerprint adapter (supervised baseline)
 scipy==1.14.1            # bootstrap intervals in 03_validity
+openai==2.52.1           # llm_judge, against the Ollama OpenAI-compatible endpoint
 
 # Scoring models, pinned by revision at load time rather than by tag. Record the commit
 # hash actually loaded in each adapter's version string.

@@ -11,6 +11,13 @@ data/*
 .Spotlight-V100
 .Trashes
 
+# --- Credentials (never commit) ---
+.env
+.env.*
+!.env.example
+*.key
+*_token
+
 # --- Python ---
 __pycache__/
 *.py[cod]

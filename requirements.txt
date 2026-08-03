@@ -9,3 +9,6 @@ huggingface_hub==1.26.0
 pandas==3.0.5
 pyarrow==25.0.0
 numpy==2.5.1
+
+# llm_judge talks to the H100 host over HTTP, so it needs no GPU locally.
+openai==2.52.1
