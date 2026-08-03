@@ -199,7 +199,9 @@ fields — the harness reads `text` only, and scores join back on `id`.
 
 ## 7. Open items before freezing
 
-1. Verify the 71% repo-age figure on the full 2,807 rather than a 25-repo sample.
+1. **Run `verify_repo_ages.py`** to replace the 25-repo estimate (~71%) with the measured
+   share over all 2,807, and to emit the eligible-repository list that the N1 builder
+   consumes. Needs `GITHUB_TOKEN` in the environment; ~12 min at 4 workers.
 2. Fix the bot-account list; decide whether GitHub's `user_type == 'Bot'` is sufficient
    or whether BoDeGHa-style classification is needed for pre-2022 accounts.
 3. Confirm GH Archive cross-check passes, or promote GH Archive to primary.

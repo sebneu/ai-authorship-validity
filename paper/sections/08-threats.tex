@@ -1,0 +1,79 @@
+\section{Threats to validity}
+\label{sec:threats}
+
+\subsection{Construct validity}
+\label{sec:threats:construct}
+
+\paragraph{Authorship is not binary.} The strongest threat to this study is that its
+outcome variable does not exist in the form the measurement assumes. Real contributions
+are frequently neither purely human nor purely machine: agent output is edited by
+humans before merge, and human code is refactored by agents. Treating authorship as a
+binary label imposes a dichotomy on a continuum. We mitigate this in three ways. Where
+possible we use the evidence-typed representation of Section~\ref{sec:provenance}
+instead of a binary label; we report a sensitivity analysis excluding heavily edited
+pull requests, using AIDev's review metadata; and we frame all claims as concerning
+\emph{declared} agent authorship rather than AI involvement in general.
+
+\paragraph{The unobservable stratum.} Our positive set captures agentic contributions
+that platforms declare. It cannot capture a developer who pastes generated code from a
+chat interface into their own editor, which is plausibly the most common form of AI
+assistance in practice. This study measures detector validity on the observable
+stratum, and is explicit that the unobservable one is out of scope. The N1--N2
+comparison in Section~\ref{sec:groundtruth:n2} offers indirect evidence about its
+magnitude under stated assumptions, but this is a bound, not a measurement.
+
+\subsection{Internal validity}
+\label{sec:threats:internal}
+
+\paragraph{Negative-set purity.} N1's purity rests on chronology plus the requirement
+that artifacts were not modified after the cutoff. Rewritten repository history could in
+principle carry post-cutoff text under pre-cutoff timestamps; we report the prevalence
+of detectable history rewriting in the sample. The cross-check against archived event
+streams described in Section~\ref{sec:groundtruth:n1} tests the timestamp rule directly
+rather than assuming it.
+
+\paragraph{Quiescence bias.} Requiring that artifacts were never modified after the
+cutoff selects for those that attracted no later activity. Such artifacts may be
+systematically shorter, less discussed or from less active projects, which could bias
+error-rate estimates in either direction. \RESULT{Report the observable differences
+between eligible and ineligible pre-cutoff artifacts on length, project activity and
+genre, so readers can judge the direction of the bias.}
+
+\paragraph{Repository eligibility.} Only repositories predating the cutoff support
+matched negatives, excluding a substantial minority of the frame
+(Section~\ref{sec:groundtruth:n1}). Excluded repositories are newer and may differ in
+agent adoption; the generalisation check on positives from excluded repositories tests
+whether this matters.
+
+\paragraph{Detector version drift.} Detector implementations and their underlying
+scoring models change. All versions are pinned and reported, and the replication package
+fixes them. This is also why no commercial detector is included: its behaviour cannot be
+pinned, so a result obtained from it cannot be reproduced.
+
+\subsection{External validity}
+\label{sec:threats:external}
+
+\paragraph{The seven-month window.} All positives fall between \AidevWindowStart{} and
+\AidevWindowEnd{}. Agent platforms and their underlying models change rapidly, and
+detector performance against a 2025 model generation may not transfer to later ones.
+This bounds the shelf life of the specific error rates while leaving the methodological
+contribution --- the counterfactual design and the correction procedure --- applicable
+to whatever generation follows.
+
+\paragraph{Agent coverage.} AIDev covers agent platforms with public GitHub footprints.
+Agents operating under human accounts, and self-hosted or enterprise deployments, are
+absent. Combined with the \AidevTopAgentShare{} share of the largest agent, this makes
+per-agent reporting essential rather than optional.
+
+\paragraph{Repository population.} The curated frame consists of comparatively popular
+repositories, with a median of \RepoStarsMedian{} stars. Detector behaviour on small,
+inactive or personal projects is not established by this study.
+
+\subsection{Conclusion validity}
+\label{sec:threats:conclusion}
+
+The stratified analysis involves many comparisons across genres, languages, agents and
+length bins. We report effect sizes with confidence intervals throughout and avoid
+null-hypothesis significance language, in keeping with the reporting conventions of this
+journal. Where a stratum is too thin to support a precise estimate, we report the
+interval rather than the point and say so explicitly.

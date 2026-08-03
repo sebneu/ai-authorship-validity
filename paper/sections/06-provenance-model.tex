@@ -1,0 +1,52 @@
+\section{Interoperable authorship provenance (RQ4)}
+\label{sec:provenance}
+
+The preceding sections establish that detector output is an unreliable basis for
+authorship claims in this domain, and that its reliability varies systematically by
+genre, length and language. That conclusion has a design consequence: an authorship
+claim is only interpretable if the evidence behind it travels with it. A merged pull
+request labelled ``AI-authored'' on the basis of a platform account and one labelled
+``AI-authored'' on the basis of a detector score are not the same claim, and current
+tooling records them identically --- or not at all.
+
+\subsection{An evidence-typed provenance vocabulary}
+\label{sec:provenance:model}
+
+\RESULT{Present the PROV-O \citep{lebo2013provo} extension. Core classes and properties:
+the human orchestrator; the agent as a tool--model--version triple, since ``Claude Code''
+is not a model and the distinction matters for reproducibility; the activity
+(generation, review, merge); the artifact chain from prompt through diff and commit to
+pull request; and the attribution evidence type --- self-declared trailer, agent
+account, platform metadata, or detector inference carrying a score, a detector version
+and the measured error rate for that artifact's stratum.}
+
+\RESULT{Figure: the vocabulary as a diagram, with one worked example annotated end to
+end.}
+
+The design commitment is that a detector-derived attribution is representable only
+\emph{with} its error characteristics attached. This is what makes the model useful
+rather than merely tidy: it renders the difference between declared and inferred
+authorship queryable.
+
+\subsection{Demonstration}
+\label{sec:provenance:demo}
+
+\RESULT{Populate a knowledge graph over the ground-truth corpus and answer competency
+questions in SPARQL. The queries should include at least: all merged pull requests whose
+authorship evidence is detector-only and whose stratum-specific false positive rate
+exceeds a threshold; the distribution of evidence types per repository; and
+contributions where declared and inferred authorship disagree. Report graph size and
+query timings.}
+
+\RESULT{Optional, cut first if the schedule slips: map AI-contribution clauses from
+CONTRIBUTING.md and AGENTS.md files to ODRL policies, making policy compliance
+checkable against the provenance graph.}
+
+\subsection{Positioning}
+\label{sec:provenance:positioning}
+
+\RESULT{Contrast with SLSA and in-toto. Supply-chain attestation answers ``what build
+process produced this artifact'' with cryptographic guarantees, but has no vocabulary
+for authorship of content, and no notion of evidence quality --- an attestation is
+either valid or not. Authorship attribution is irreducibly probabilistic, which is
+precisely why the evidence type must be first-class.}

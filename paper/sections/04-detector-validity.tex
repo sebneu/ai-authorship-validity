@@ -1,0 +1,71 @@
+\section{Detector validity (RQ1 and RQ2)}
+\label{sec:validity}
+
+\subsection{Detector harness}
+\label{sec:validity:harness}
+
+\RESULT{Describe the unified harness: text in, score out; one adapter per detector;
+fixed seeds; pinned model and library versions. State the scoring models used for
+Fast-DetectGPT and Binoculars (Llama-3-8B class, run on local H100/H200 hardware) and
+note that no commercial detector is included, so the entire evaluation is reproducible
+from open weights. Report wall-clock cost per genre as a practical note for
+replication.}
+
+The evaluated approaches are: Fast-DetectGPT \citep{bao2024fastdetectgpt}, Binoculars
+\citep{hans2024binoculars}, \RESULT{DetectCodeGPT}, the heuristic filters reimplemented
+from the prevalence studies in Table~\RESULT{1}, an LLM-as-classifier baseline, and the
+supervised in-domain classifier of \citet{ghaleb2026fingerprinting} as a ceiling
+reference.
+
+\subsection{RQ1: criterion validity}
+\label{sec:validity:rq1}
+
+\RESULT{AUROC per detector, per agent, per genre, with confidence intervals. Precision
+and recall at each detector's published operating point --- the operating point matters
+more than the AUROC, because the prevalence literature applies these thresholds as
+published. Calibration assessed by expected calibration error.}
+
+\RESULT{Figure: AUROC by genre and detector, with commit messages expected at the low
+end. If the expected pattern does not appear, report it plainly; a null result here is
+still a contribution, since no in-domain validation exists at all.}
+
+\subsection{RQ2: structure of the errors}
+\label{sec:validity:rq2}
+
+\subsubsection{The counterfactual false positive test}
+\label{sec:validity:counterfactual}
+
+\RESULT{False positive rate on N1 with bootstrap confidence intervals, stratified by
+genre, language, text length decile and project scale. Every flagged artifact here is an
+error by construction. This is the headline result of the paper and the input to
+Section~\ref{sec:correction}.}
+
+\subsubsection{Automation as a confounder}
+\label{sec:validity:bots}
+
+\RESULT{False positive rate on N3 reported separately, quantifying how much apparent AI
+prevalence is pre-LLM automation. Compare against the N1 rate on human-authored text
+from the same period and repositories.}
+
+\subsubsection{Text length}
+\label{sec:validity:length}
+
+\RESULT{Detector performance as a function of text length, with the matched and
+unmatched comparison reported side by side; their difference estimates the length
+confound. Given a median commit message of \AidevCommitMsgMedian{} characters, this is
+expected to be the dominant error driver.}
+
+\subsubsection{Linguistic proxies}
+\label{sec:validity:language}
+
+\RESULT{Error rates against repository-level linguistic proxies, testing whether the
+non-native-writer bias of \citet{liang2023biased} reproduces in this domain. Frame
+carefully: the unit of analysis is the repository, not the individual, and no claim is
+made about any contributor.}
+
+\subsubsection{Agent generalisation}
+\label{sec:validity:agents}
+
+\RESULT{Cross-agent results. Since \AidevTopAgentShare{} of the corpus is one agent,
+report explicitly whether detectors tuned on the aggregate transfer to the others, and
+what a pooled metric would have concealed.}

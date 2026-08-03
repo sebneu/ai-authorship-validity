@@ -1,0 +1,116 @@
+\section{Background and related work}
+\label{sec:background}
+
+\subsection{Prevalence studies of AI-generated contributions}
+\label{sec:background:prevalence}
+
+\RESULT{Table~1: the audit targets. One row per published prevalence study, with
+columns for detection strategy, artifact types scored, sample frame, reported
+prevalence, and whether in-domain validation was performed. Populate from
+LITERATURE.md section A once the four 2026 studies have been read in full and their
+pipelines extracted. The final column is expected to read ``none'' throughout; that
+column is the paper's motivation in one glance.}
+
+\subsection{Detecting machine-generated text}
+\label{sec:background:detection}
+
+Zero-shot detection exploits a structural asymmetry: text sampled from a language model
+tends to sit at a local maximum of that model's likelihood surface, while human text
+does not. \citet{mitchell2023detectgpt} formalised this as probability curvature and
+estimated it by perturbing the candidate text and re-scoring, which is accurate but
+computationally heavy. \citet{bao2024fastdetectgpt} replaced the perturbation step with
+a conditional probability curvature computed analytically, achieving comparable accuracy
+at a fraction of the cost. \citet{hans2024binoculars} took a different route, contrasting
+the perplexity of the text under one model with its cross-perplexity under a second,
+closely related model; the ratio normalises away the intrinsic difficulty of the text
+and yields the strongest published operating points.
+
+Two properties of this family matter here. First, all of it is calibrated on text of
+substantial length; the statistical quantities being estimated are sample means over
+tokens, and their variance grows as texts shorten. Second, the null hypothesis is
+``written by a human'', not ``not written by an LLM''. Templated, generated or
+boilerplate text produced by non-LLM automation occupies the same low-perplexity region
+of the distribution as LLM output, and nothing in the method distinguishes them.
+
+Code-specific detection adapts the same intuition to a different surface form.
+\RESULT{DetectCodeGPT citation and one-paragraph method summary --- verify the exact
+venue, listed as unresolved in LITERATURE.md section B.}
+
+The closest work to ours in the detection family is \citet{ghaleb2026fingerprinting},
+who trains a supervised classifier on \citednum{41} engineered features spanning commit messages,
+pull request structure and code characteristics, and reports \citednum{97.2\%} F1 at identifying
+\emph{which} of five agents authored a pull request. The task differs from ours in a way
+that makes the two complementary rather than competing: it is a multi-class
+discrimination among agents, evaluated on contributions already known to be
+agent-authored, and it therefore says nothing about the agent-versus-human decision or
+about false positives on human text. We include it in our evaluation as a supervised,
+in-domain reference point --- an estimate of the ceiling achievable when a classifier is
+trained on exactly the distribution it is tested on, against which the off-the-shelf
+zero-shot detectors used in the prevalence literature can be read.
+
+\subsection{Detector validity and bias}
+\label{sec:background:validity}
+
+The reliability of AI-text detection has been contested since the tools appeared.
+\citet{sadasivan2023reliably} establish theoretical limits, showing that as the
+distributions of human and machine text converge, any detector's performance approaches
+chance, and that paraphrase attacks exploit this directly.
+
+The empirical result most relevant to our setting is \citet{liang2023biased}, who found
+that detectors classify writing by non-native English speakers as machine-generated at
+substantially elevated rates, because the linguistic features that detectors treat as
+evidence of machine authorship --- limited lexical variety, conventional phrasing,
+lower syntactic complexity --- also characterise second-language writing. Open-source
+development is a setting where this bias would be both amplified and consequential:
+contributors are globally distributed, most write in English as a second language, and
+being flagged as an AI contributor carries a governance cost.
+
+Validation of detectors outside their original domain remains rare. In the news domain,
+\citet{ansari2025echoes} apply Binoculars, Fast-DetectGPT and GPTZero to over
+\citednum{40,000} articles to estimate the growth of LLM use in journalism --- the same instrument stack
+as the software prevalence literature, applied with the same absence of in-domain
+validation. \RESULT{If the pre-GPT-era Washington Post counterfactual baseline is
+confirmed (see LITERATURE.md section C, currently unverified), cite it here as the
+direct methodological precedent for our design and state explicitly what our study adds:
+the software domain, code as well as prose, and the correction step.}
+
+\subsection{Prevalence estimation under imperfect measurement}
+\label{sec:background:correction}
+
+Estimating the true frequency of a condition from an imperfect test is a solved problem
+outside software engineering. \citet{rogan1978estimating} give the standard correction:
+for an apparent prevalence $p_{\text{obs}}$ measured by a test with sensitivity $s$ and
+specificity $c$, the true prevalence is
+\begin{equation}
+  p_{\text{true}} = \frac{p_{\text{obs}} + c - 1}{s + c - 1}.
+  \label{eq:rogan-gladen}
+\end{equation}
+The estimator makes the dependence explicit and occasionally embarrassing: when
+$s + c - 1$ is small --- that is, when the test barely outperforms chance --- the
+correction amplifies uncertainty without bound, and the corrected estimate is
+uninformative. Applying it to the published prevalence figures requires exactly the
+quantities that have not been measured for this domain, which is what
+Section~\ref{sec:validity} supplies.
+
+\subsection{Bots and pre-LLM automation}
+\label{sec:background:bots}
+
+Machine-generated text in open-source repositories long predates large language models.
+Dependency managers, release automation, continuous integration reporters and templated
+issue forms have been producing text at scale for over a decade, and identifying them
+is itself an established research problem \RESULT{BoDeGHa citation, verify}. The
+confounder is not hypothetical: in AIDev, \AidevCommentBotShare{} of the comments on
+agent-authored pull requests are themselves bot-authored. Any prevalence estimate that
+does not separate bot text from LLM text is measuring their sum, and any detector
+evaluation that does not report performance on bot text separately cannot say which of
+the two it is responding to.
+
+\subsection{Provenance and attribution infrastructure}
+\label{sec:background:provenance}
+
+\RESULT{PROV-O \citep{lebo2013provo} as the base vocabulary; SLSA and in-toto as the
+industrial supply-chain counterpart; existing software-provenance modelling work. Frame
+the gap: supply-chain provenance answers ``what produced this artifact'' for build
+systems, but has no vocabulary for ``who or what authored this content, and on what
+evidence''. Draft once the SLSA/in-toto positioning search in LITERATURE.md section F
+is complete.}

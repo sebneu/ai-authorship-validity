@@ -1,0 +1,43 @@
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{Implications for the prevalence literature}
+\label{sec:discussion:prevalence}
+
+\RESULT{State what the measured error rates imply for the published figures, in terms
+of direction and magnitude. Be precise about which studies are affected and how: a
+study that scores long pull request bodies is in a different position from one that
+scores commit messages. Avoid the temptation to a single headline multiplier --- the
+error is stratum-dependent, and that is itself the finding.}
+
+\RESULT{Set the result against \citet{khosravani2026census}. They measure undercounting
+in declaration channels; we measure overcounting in content-based detection. If both
+hold, prevalence should be reported as an interval bounded from below by declaration and
+from above by corrected detection, and neither bound alone is a defensible estimate.}
+
+\subsection{Implications for platform-level attribution}
+\label{sec:discussion:platform}
+
+\RESULT{Argue from the \AidevTrailerRate{} trailer rate and the platform-account
+channel: declared attribution works where it exists, and is cheap. The infrastructural
+recommendation follows --- treat \texttt{Co-authored-by} and equivalent metadata as
+first-class, and prefer declaration over inference wherever a choice exists.}
+
+\subsection{Implications for research practice}
+\label{sec:discussion:practice}
+
+\RESULT{Concrete recommendations for future prevalence studies: validate in domain
+before estimating; report per-genre and per-agent rather than pooled; exclude pre-LLM
+automation explicitly and report it; state the operating point and its measured error;
+and correct the estimate rather than reporting apparent prevalence. Frame as a
+checklist, which is the form most likely to be adopted.}
+
+\subsection{Ethical considerations}
+\label{sec:discussion:ethics}
+
+\RESULT{Detector output is already used in governance contexts --- contribution
+policies, review triage, moderation. If false positive rates are elevated and unevenly
+distributed across linguistic populations, deploying these tools as gatekeeping
+mechanisms imposes costs on contributors who are already marginal. State this plainly
+and connect to the measured stratified error rates rather than asserting it in the
+abstract.}
