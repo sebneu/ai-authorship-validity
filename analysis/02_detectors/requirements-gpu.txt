@@ -1,0 +1,33 @@
+# Detector dependencies for the GPU host (H100/H200). Not installed on the laptop:
+# the corpus stage runs there and needs none of this.
+#
+#   python -m venv .venv-gpu
+#   .venv-gpu/bin/pip install -r requirements-gpu.txt
+#
+# Versions are pinned rather than floated. A detector whose scoring model or tokenizer
+# changes between runs produces numbers that cannot be reproduced, which is the failure
+# this paper is about.
+
+--extra-index-url https://download.pytorch.org/whl/cu124
+
+torch==2.5.1
+transformers==4.46.3
+accelerate==1.1.1
+sentencepiece==0.2.0
+
+# Shared with the corpus stage; repeated so this file installs standalone.
+pandas==3.0.5
+pyarrow==25.0.0
+numpy==2.5.1
+scikit-learn==1.5.2      # fingerprint adapter (supervised baseline)
+scipy==1.14.1            # bootstrap intervals in 03_validity
+
+# Scoring models, pinned by revision at load time rather than by tag. Record the commit
+# hash actually loaded in each adapter's version string.
+#
+#   meta-llama/Meta-Llama-3-8B          Fast-DetectGPT sampling + scoring
+#   meta-llama/Meta-Llama-3-8B-Instruct Binoculars observer
+#   codellama/CodeLlama-7b-hf           DetectCodeGPT
+#
+# Llama-3 weights are gated on Hugging Face and need an accepted licence plus
+# HF_TOKEN in the environment. Budget that before the first run.
