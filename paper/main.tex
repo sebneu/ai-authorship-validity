@@ -8,7 +8,9 @@
 % Build:  latexmk -pdf main.tex
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \RequirePackage{fix-cm}
-\documentclass[smallextended]{svjour3}
+% natbib is a class option rather than a package load for svjour3; it is what binds
+% \citep/\citet to the Springer spbasic author-year style.
+\documentclass[smallextended,natbib]{svjour3}
 
 \smartqed
 
@@ -37,6 +39,9 @@
 
 \title{Who Wrote This? A Validity Audit of AI-Authorship\\
        Attribution in Open-Source Software Artifacts}
+
+% Without this the running head reads "Title Suppressed Due to Excessive Length".
+\titlerunning{A Validity Audit of AI-Authorship Attribution in OSS}
 
 \author{Sebastian Neumaier}
 

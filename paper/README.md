@@ -13,19 +13,30 @@ check_manuscript.py      static checks (see below)
 ## Build
 
 ```bash
-latexmk -pdf main.tex
+make
 ```
 
-There is no TeX installation on the development machine at time of writing, so **the
-draft has not yet been compiled**. Before trusting the layout, install a toolchain:
+Regenerates the numbers, runs `latexmk`, then runs the checks and reports page count and
+open placeholders. Other targets: `make check`, `make watch` (continuous preview),
+`make clean`, and `make submit-check` (fails while any placeholder is open).
+
+### Toolchain
+
+TeX is a per-user **TinyTeX** install at `~/Library/TinyTeX` — no `sudo`, nothing written
+to `/usr/local`. The Makefile puts it on `PATH` itself, so no shell setup is needed. To
+reinstall on another machine:
 
 ```bash
-brew install --cask basictex
+curl -sL https://yihui.org/tinytex/install-bin-unix.sh | sh
 ```
 
-BasicTeX needs `sudo tlmgr install` for anything beyond the minimal set; `svjour3` is
-vendored here, but `booktabs`, `hyperref` and `fix-cm` may need pulling in. The
-alternative is the full MacTeX cask (~4 GB, no extra package management).
+The default package set compiled this document as-is: `svjour3` is vendored here, and
+`booktabs`, `hyperref`, `natbib`, `amsmath` and `fix-cm` were all present. If a future
+addition needs something else, `tlmgr install <pkg>` works without `sudo`.
+
+Note that `natbib` is passed as a **class option** (`\documentclass[...,natbib]`), not
+loaded with `\usepackage` — that is how `svjour3` binds `\citep`/`\citet` to Springer's
+`spbasic` style, and loading it the usual way silently fails.
 
 ## Two rules the checker enforces
 

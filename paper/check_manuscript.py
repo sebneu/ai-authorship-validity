@@ -94,7 +94,8 @@ def main() -> int:
                     "add a macro in profile_aidev.py instead"
                 )
 
-    open_results = sum(len(re.findall(r"\\RESULT", p.read_text())) for p in sources())
+    # Count uses, not the \newcommand that defines it.
+    open_results = sum(len(re.findall(r"\\RESULT\{", p.read_text())) for p in sources())
 
     for w in warnings:
         print(f"warning: {w}")
