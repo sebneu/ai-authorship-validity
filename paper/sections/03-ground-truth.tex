@@ -1,46 +1,39 @@
 \section{Ground-truth construction}
 \label{sec:groundtruth}
 
-The validity of everything that follows depends on this section, so we describe the
-corpus in more detail than is conventional. Two design commitments govern it. First,
-no label originates from human judgement about whether a text looks machine-written;
-every label derives from platform attribution or from chronology. Second, positives and
-negatives are drawn from the same repositories wherever possible, so that differences
-between them are not differences between projects.
+Everything that follows depends on this corpus, so we describe it in more detail than is
+usual. Two commitments govern the design. No label comes from a human judgement about
+whether a text looks machine-written; labels derive from platform attribution or from
+chronology. Positives and negatives are drawn from the same repositories wherever
+possible, so that differences between them are not differences between projects.
 
-\subsection{Positive set: declared agent authorship}
+\subsection{Positive set}
 \label{sec:groundtruth:positives}
 
-Positives come from the AIDev dataset \citep{li2025aidev}, which collects pull requests
-opened by agentic coding platforms operating under their own accounts. We pin the
-dataset revision used, because AIDev is a living resource: the paper introducing it
-reports \citednum{456{,}000} pull requests, while the revision we analyse contains \AidevPRs{}
-across \AidevRepos{} repositories. All counts below are measured from the pinned
-revision rather than quoted from the literature.
+Positives come from AIDev \citep{li2025aidev}, which collects pull requests opened by
+agentic coding platforms operating under their own accounts. We pin the dataset revision
+because AIDev is still growing: the paper introducing it reports \citednum{456{,}000}
+pull requests, while the revision we analyse contains \AidevPRs{} across \AidevRepos{}
+repositories. All counts below are measured from the pinned revision.
 
-Three properties of the positive set constrain the design, and we report them
-prominently because they bound every claim in this paper.
-
-\paragraph{The observation window is seven months.} All agent-authored pull requests in
-the dataset fall between \AidevWindowStart{} and \AidevWindowEnd{}. Our findings
-therefore concern the agent platforms and underlying model versions current in the first
-half of 2025. We return to this in Section~\ref{sec:threats}.
-
-\paragraph{The agent mix is severely imbalanced.} Table~\ref{tab:agents} gives the
-composition. A single agent accounts for \AidevTopAgentShare{} of all pull requests, and
-median body length differs by roughly an order of magnitude across agents. Any metric
-computed by pooling agents is therefore dominated by one of them. We report all
-detector results per agent, and present pooled figures only under explicit equal
-allocation.
+Three properties of the positive set bound every claim in this paper. First, the
+observation window is seven months: all agent-authored pull requests fall between
+\AidevWindowStart{} and \AidevWindowEnd{}, so the results describe the platforms and
+model versions current in the first half of 2025. Second, the agent mix is uneven
+(Table~\ref{tab:agents}). One agent accounts for \AidevTopAgentShare{} of pull requests,
+and median body length differs by about an order of magnitude across agents, so any
+pooled metric mostly describes that agent. We report detector results per agent, and
+give pooled figures only under equal allocation. Third, the texts are short: the median
+pull request body is \AidevBodyMedian{} characters and the median commit message
+\AidevCommitMsgMedian{}. Detectors that separate classes almost perfectly on
+essay-length text are being asked here to decide on a single line of English.
 
 \begin{table}
-\caption{Composition of the positive set at the pinned AIDev revision. Median body
-length varies by roughly an order of magnitude across agents, so pooled metrics are
-dominated by the largest contributor.}
+\caption{Positive set composition at the pinned AIDev revision}
 \label{tab:agents}
 \begin{tabular}{lrr}
 \hline\noalign{\smallskip}
-Agent & Pull requests & Median body (chars) \\
+Agent & PRs & Median body (chars) \\
 \noalign{\smallskip}\hline\noalign{\smallskip}
 OpenAI Codex & \AgentOpenAICodexPRs{} & \AgentOpenAICodexBodyMedian{} \\
 GitHub Copilot & \AgentCopilotPRs{} & \AgentCopilotBodyMedian{} \\
@@ -51,153 +44,135 @@ Claude Code & \AgentClaudeCodePRs{} & \AgentClaudeCodeBodyMedian{} \\
 \end{tabular}
 \end{table}
 
-\paragraph{The texts are short.} The median pull request body is \AidevBodyMedian{}
-characters and the median commit message \AidevCommitMsgMedian{}. This is not incidental
-to the study; it is arguably the central fact about the domain. Detectors that report
-near-perfect separation on essay-length text are being asked here to decide on a single
-line of English.
-
 \subsubsection{Artifact genres}
 \label{sec:groundtruth:genres}
 
-We treat five genres separately, because they differ in length, register and
-conventionality, and because the prevalence literature scores different subsets of them:
+We treat five genres separately, because they differ in length and register and because
+published studies score different subsets of them. Pull request descriptions are prose
+of moderate length and often follow a template. Commit messages are the shortest genre
+and the most conventional. Code diffs are scored per file, with the language taken from
+repository metadata. Issue bodies are prose in a different register from pull requests.
+Pull request comments are restricted to human accounts, since \AidevCommentBotShare{} of
+comments on agent-authored pull requests come from bots, and an unfiltered genre would
+measure continuous-integration output instead of agent output.
 
-\begin{enumerate}
-  \item \emph{Pull request descriptions} --- prose, moderate length, often templated.
-  \item \emph{Commit messages} --- the shortest genre, heavily conventionalised.
-    \texttt{Co-authored-by} and similar trailer lines are stripped into a separate field
-    and never passed to a detector; recovering an explicit declaration is not detection.
-  \item \emph{Code diffs} --- the patch hunks, scored per file, with language taken from
-    repository metadata.
-  \item \emph{Issue bodies} --- prose with a different register from pull requests.
-  \item \emph{Pull request comments} --- restricted to human accounts. This restriction
-    is severe and necessary: \AidevCommentBotShare{} of comments on agent-authored pull
-    requests are bot-authored, so an unfiltered comment genre would measure
-    continuous-integration bot output rather than agent output.
-\end{enumerate}
+Trailer lines such as \texttt{Co-authored-by} are removed from commit messages before
+scoring and stored separately. Recovering an explicit declaration is not detection, and
+leaving trailers in place would let a detector identify authorship by reading a label.
+The same removal is applied to positive and negative texts, using shared code, so that
+normalisation cannot become a signal.
 
 Allocation across the resulting agent-by-genre cells is equal rather than proportional,
-targeting 1{,}000 texts per cell with a floor of 300. Equal allocation sacrifices
-precision on the most abundant agent to obtain usable precision on the least abundant,
-which is the correct trade when the question is whether detector behaviour generalises
-across agents rather than what its average is. The sampled positive set contains
+targeting 1{,}000 texts per cell with a floor of 300. This trades precision on the
+abundant agent for usable precision on the scarce one, which suits a question about
+whether detector behaviour generalises across agents. The sampled positive set contains
 \PositiveTexts{} texts across \PositiveCells{} cells.
 
-\paragraph{What equal allocation costs.} Because agents differ so much in verbosity,
-reweighting them equally changes the corpus itself: the median pull request body rises
-from \PrBodyMedianPopulation{} characters in the population to
-\PrBodyMedianSampled{} in the sample. The sampled corpus is therefore deliberately
-\emph{not} representative of the population of agent contributions, and no prevalence
-claim is made from it --- it exists to estimate per-stratum detector error, which
-Section~\ref{sec:correction} then applies to representative samples. Reporting this
-explicitly matters because the same reweighting, left undisclosed, would make detectors
-look better than they are: longer texts are easier to classify.
+Equal allocation changes the corpus, and the effect should be stated. Because agents
+differ in verbosity, reweighting them equally raises the median pull request body from
+\PrBodyMedianPopulation{} characters in the population to \PrBodyMedianSampled{} in the
+sample. The sampled positive set is therefore not representative of agent contributions,
+and we make no estimate of AI prevalence from it. Its purpose is to estimate per-stratum
+detector error, which Section~\ref{sec:validity} then applies to representative samples.
+Left unstated, the same reweighting would make the detectors look better than they are,
+since longer texts are easier to classify.
 
-\paragraph{One genre cannot support per-agent analysis.} Issue bodies are linked to
-agent authorship only through AIDev's issue--pull-request link table, and the resulting
-cells are thin: three of the five agents fall below the floor of 300, two of them below
-200. Issue bodies are therefore analysed pooled across agents, and per-agent claims are
-restricted to the other four genres. This is a limitation of the available attribution
-data rather than of the design, and we report it rather than quietly padding the cells
-from a proportional draw.
+Issue bodies are the exception to per-agent reporting. They can be attributed to an
+agent only through AIDev's issue-to-pull-request link table, and three of the five agent
+cells fall below the floor of 300, two of them below 200. We analyse that genre pooled
+across agents and restrict per-agent claims to the other four. This reflects what the
+attribution data supports.
 
 \subsection{Negative sets}
 \label{sec:groundtruth:negatives}
 
-No single negative set is simultaneously pure and representative, so we construct three
-with different and complementary weaknesses.
+No single negative set is both clean and realistic, so we construct three with
+complementary weaknesses.
 
 \subsubsection{N1: pre-LLM artifacts from the same repositories}
 \label{sec:groundtruth:n1}
 
 The primary negative set consists of artifacts written in the positive set's own
-repositories before \LlmCutoff{}, the public release of ChatGPT. Its purity follows from
-chronology, and every detection in it is a false positive by construction.
+repositories before \LlmCutoff{}. Its composition follows from chronology, and every
+detection in it is a false positive by construction.
 
-\paragraph{Dating the text, not the artifact.} Filtering on an artifact's creation date
-is insufficient, because bodies can be edited and issue threads accumulate comments
-indefinitely. While profiling repository data we encountered an issue created in 2013
-carrying a comment written in 2026 that opens with an explicit agent-generated
-verification report. Selecting on creation date alone would have admitted that comment
-to the pre-LLM negative set. We therefore require both the creation and last-modification
-timestamps to precede the cutoff, which guarantees the text has not been touched since,
-at the cost of biasing the set toward artifacts that attracted no subsequent activity.
-Section~\ref{sec:threats} treats this quiescence bias.
+Selecting on an artifact's creation date is not sufficient, because bodies can be edited
+and issue threads keep accumulating comments. While profiling repository data we found
+an issue created in 2013 carrying a comment written in 2026 that opens with an
+agent-generated verification report. Selection by creation date alone would have admitted
+that comment to a pre-LLM set. We therefore require both the creation and the
+last-modification timestamp to precede the cutoff, which shows the text has not been
+touched since. The rule is conservative: an old issue touched by a label change is
+dropped, which biases the set toward artifacts that attracted no later activity.
+Section~\ref{sec:threats} returns to this.
 
-For commit messages and diffs the problem does not arise in the same form: we read them
-from cloned repository history rather than from the platform API, where they are dated
-by committer timestamp and cannot be altered without rewriting history.
+Commit messages and diffs avoid the problem. We read them from cloned repository history
+rather than from the platform API, where they are dated by committer timestamp and
+cannot be altered without rewriting history. The cutoff is applied in UTC to both the
+committer and the author timestamp.
 
-\paragraph{Repository eligibility.} Not every repository in the positive set has a
-pre-LLM history. Of the \RepoFrame{} curated repositories, \NOneResolved{} still resolve
-on GitHub --- \NOneUnresolvable{} have been deleted, renamed or withdrawn --- and of
-those, \NOneEligible{} (\NOneEligiblePct{}) were created before \LlmCutoff{}. These form
-the N1 frame. The oldest dates from \NOneOldestRepo{}, so the frame spans the better part
-of two decades of development practice.
+Not every repository has a pre-LLM history. Of the \RepoFrame{} curated repositories,
+\NOneResolved{} still resolve on GitHub, \NOneUnresolvable{} having been deleted,
+renamed or withdrawn, and \NOneEligible{} of those (\NOneEligiblePct{}) were created
+before \LlmCutoff{}. These form the N1 frame, the oldest dating from \NOneOldestRepo{}.
+Because repository names can be released on rename and reused, we check that each name
+still resolves to the GitHub numeric identifier AIDev recorded and exclude any
+repository where it does not, independently of age.
 
-Repository names are not stable identifiers: a project can be renamed and its name
-reused by an unrelated project. We therefore verify that each name still resolves to the
-GitHub numeric identifier that AIDev recorded, and exclude any repository where it does
-not, independently of age.
-
-The excluded \NOneExcluded{} repositories are not a random subset --- they are younger, and younger projects plausibly differ in their
-propensity to adopt coding agents. Losing nearly two-fifths of the frame is a real cost
-to statistical power in the matched analysis, and we report a generalisation check on
-the excluded repositories using positives alone to test whether the restriction changes
-the conclusions.
+The \NOneExcluded{} excluded repositories are younger than those retained, and younger
+projects may differ in how readily they adopt coding agents. Losing this share of the
+frame also costs power in the matched analysis. We report a generalisation check on the
+excluded repositories using positives alone, to test whether the restriction affects the
+conclusions.
 
 \subsubsection{N2: contemporaneous human contributions}
 \label{sec:groundtruth:n2}
 
-N1 is pure but temporally separated from the positives, which confounds authorship with
-period: coding conventions, tooling and project norms all changed between 2022 and 2025.
-The second negative set removes the temporal confound at the cost of purity. AIDev
-includes \AidevHumanPRs{} human-authored pull requests from \AidevHumanRepos{}
-repositories and \AidevHumanUsers{} distinct users, drawn from the same period as the
-positives, with a median body of \AidevHumanBodyMedian{} characters.
+N1 is clean but separated in time from the positives, which confounds authorship with
+period: conventions, tooling and project norms all changed between 2022 and 2025. The
+second negative set removes that confound at the cost of certainty. AIDev includes
+\AidevHumanPRs{} human-authored pull requests from \AidevHumanRepos{} repositories and
+\AidevHumanUsers{} users, drawn from the same period as the positives, with a median
+body of \AidevHumanBodyMedian{} characters.
 
-These are human-\emph{attributed}, not verified human-\emph{written}: a developer may
-have drafted the text with a chatbot and pasted it in, leaving no trace. Error rates on
-N2 are therefore reported as \emph{apparent} rather than true false positive rates. The
-gap between the N1 and N2 rates is itself informative, since under stated assumptions it
-bounds the extent of undeclared assisted authorship in the human population --- the
-stratum this study otherwise cannot observe.
+These are attributed to humans rather than verified as human-written. A developer may
+have drafted the text with a chatbot and pasted it in, leaving no trace. We therefore
+report error rates on N2 as apparent rather than true false positive rates. The
+difference between the N1 and N2 rates is informative in itself: under assumptions we
+state in Section~\ref{sec:correction}, it bounds how much undeclared assisted authorship
+the human population contains.
 
 \subsubsection{N3: pre-LLM automation}
 \label{sec:groundtruth:n3}
 
-The third set isolates the confounder. It comprises pre-cutoff artifacts from known
-automation accounts --- dependency managers, release tooling, continuous integration
-reporters --- in the same repositories. This text is machine-generated and definitively
-not LLM-generated. The detection rate on N3 estimates how much reported ``AI
-prevalence'' is decade-old automation being relabelled.
+The third set isolates the confounder. It consists of pre-cutoff artifacts from known
+automation accounts, including dependency managers, release tooling and continuous
+integration reporters, in the same repositories. This text is machine-generated and
+predates large language models. The detection rate on N3 estimates how much reported AI
+content is decade-old automation being relabelled.
 
 \subsection{Matching and stratification}
 \label{sec:groundtruth:matching}
 
-Because detector scores are length-sensitive and the agents differ substantially in
-length, an unmatched comparison would partly measure length rather than authorship.
-Negatives are therefore sampled to match the positive length distribution within genre
-by decile. We report unmatched results alongside matched ones, since the difference
-between them estimates the magnitude of the length confound rather than merely
-controlling for it.
+Detector scores depend on text length, and the agents differ in length, so an unmatched
+comparison would partly measure length rather than authorship. We sample negatives to
+match the positive length distribution within genre by decile, and report unmatched
+results alongside matched ones, since the difference between them estimates the size of
+the length effect.
 
-Stratification variables are programming language, text length, artifact genre, agent,
-and project scale. For the subset of repositories also covered by the CrOSSD panel
-\RESULT{cite Dam, Klausner, Neumaier WWW'23} we additionally use its health and
-criticality metrics. Following \citet{liang2023biased}, we require a proxy for
-contributors' English proficiency, but author-name and author-location proxies are both
-unreliable and ethically objectionable. We instead use repository-level linguistic
-proxies derived from documentation text, which attribute a property to the project
-rather than to an individual.
+Stratification variables are programming language, text length, genre, agent and project
+scale. For repositories also covered by the CrOSSD panel \RESULT{cite Dam, Klausner,
+Neumaier WWW'23} we add its health and criticality metrics. Following
+\citet{liang2023biased} we need a proxy for contributors' English proficiency.
+Author-name and author-location proxies are unreliable and ethically objectionable, so
+we use repository-level linguistic measures taken from documentation text, which
+describe the project rather than any individual.
 
 \subsection{Corpus release}
 \label{sec:groundtruth:release}
 
-The frozen corpus is released as a specification --- artifact identifiers, selection
-predicates, seeds and per-cell counts --- together with the code that rebuilds it, so
-that the corpus can be reconstructed without redistributing repository content beyond
-what its licence permits. Every count reported in this paper is emitted directly by the
-analysis scripts into the manuscript source, so no figure in the prose can drift from the
-data that produced it.
+The frozen corpus is released as a specification of artifact identifiers, selection
+predicates, seeds and per-cell counts, together with the code that rebuilds it, so that
+it can be reconstructed without redistributing repository content beyond what the
+licences allow. Every count reported in this paper is written into the manuscript source
+by the analysis scripts, so no figure in the text can drift from the data behind it.

@@ -69,3 +69,22 @@ made about any contributor.}
 \RESULT{Cross-agent results. Since \AidevTopAgentShare{} of the corpus is one agent,
 report explicitly whether detectors tuned on the aggregate transfer to the others, and
 what a pooled metric would have concealed.}
+
+\subsection{Corrected estimates (RQ3)}
+\label{sec:correction}
+
+\RESULT{Apply Equation~\eqref{eq:rogan-gladen} using the sensitivity and specificity
+measured in Section~\ref{sec:validity}, propagating uncertainty by bootstrap. Report
+corrected prevalence as an interval under best- and worst-case detector assumptions,
+and place the point estimates from the published studies in Table~\RESULT{1} alongside.}
+
+\RESULT{Two boundary cases need explicit treatment. First, where $s + c - 1$ is small the
+correction is undefined in practice and the honest output is ``this design cannot
+estimate prevalence'' rather than a number with wide error bars; say so where it applies.
+Second, the corrected estimate can fall below zero when apparent prevalence is lower than
+the false positive rate; report the truncation and what it implies.}
+
+\RESULT{Re-estimate prevalence on a defensible sample of post-2023 projects and contrast
+with the literature. State clearly which stratum the estimate covers: agent-attributed
+and detector-inferred contributions, not undeclared assisted authorship, which remains
+unobservable by this design.}

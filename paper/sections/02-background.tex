@@ -25,12 +25,12 @@ the perplexity of the text under one model with its cross-perplexity under a sec
 closely related model; the ratio normalises away the intrinsic difficulty of the text
 and yields the strongest published operating points.
 
-Two properties of this family matter here. First, all of it is calibrated on text of
-substantial length; the statistical quantities being estimated are sample means over
-tokens, and their variance grows as texts shorten. Second, the null hypothesis is
-``written by a human'', not ``not written by an LLM''. Templated, generated or
-boilerplate text produced by non-LLM automation occupies the same low-perplexity region
-of the distribution as LLM output, and nothing in the method distinguishes them.
+Two properties of this family matter here. All of it is calibrated on text of
+substantial length: the quantities being estimated are sample means over tokens, and
+their variance grows as texts shorten. The null hypothesis is also ``written by a
+human'' rather than ``not written by a language model''. Boilerplate produced by
+non-LLM automation sits in the same low-perplexity region as model output, and nothing
+in the method separates the two.
 
 Code-specific detection adapts the same intuition to a different surface form.
 \RESULT{DetectCodeGPT citation and one-paragraph method summary --- verify the exact
@@ -39,14 +39,12 @@ venue, listed as unresolved in LITERATURE.md section B.}
 The closest work to ours in the detection family is \citet{ghaleb2026fingerprinting},
 who trains a supervised classifier on \citednum{41} engineered features spanning commit messages,
 pull request structure and code characteristics, and reports \citednum{97.2\%} F1 at identifying
-\emph{which} of five agents authored a pull request. The task differs from ours in a way
-that makes the two complementary rather than competing: it is a multi-class
-discrimination among agents, evaluated on contributions already known to be
-agent-authored, and it therefore says nothing about the agent-versus-human decision or
-about false positives on human text. We include it in our evaluation as a supervised,
-in-domain reference point --- an estimate of the ceiling achievable when a classifier is
-trained on exactly the distribution it is tested on, against which the off-the-shelf
-zero-shot detectors used in the prevalence literature can be read.
+\emph{which} of five agents authored a pull request. The task differs from ours: it
+discriminates among agents on contributions already known to be agent-authored, so it
+says nothing about the agent-versus-human decision or about false positives on human
+text. We include it as a supervised, in-domain reference point. It estimates what is
+achievable when a classifier is trained on the distribution it is tested on, and gives a
+scale against which the off-the-shelf detectors can be read.
 
 \subsection{Detector validity and bias}
 \label{sec:background:validity}
@@ -85,25 +83,23 @@ specificity $c$, the true prevalence is
   p_{\text{true}} = \frac{p_{\text{obs}} + c - 1}{s + c - 1}.
   \label{eq:rogan-gladen}
 \end{equation}
-The estimator makes the dependence explicit and occasionally embarrassing: when
-$s + c - 1$ is small --- that is, when the test barely outperforms chance --- the
-correction amplifies uncertainty without bound, and the corrected estimate is
-uninformative. Applying it to the published prevalence figures requires exactly the
-quantities that have not been measured for this domain, which is what
+The estimator makes the dependence explicit. When $s + c - 1$ is small, meaning the test
+barely outperforms chance, the correction amplifies uncertainty without bound and the
+corrected estimate carries no information. Applying it to published figures needs the
+quantities that have not been measured for this domain, which
 Section~\ref{sec:validity} supplies.
 
 \subsection{Bots and pre-LLM automation}
 \label{sec:background:bots}
 
-Machine-generated text in open-source repositories long predates large language models.
-Dependency managers, release automation, continuous integration reporters and templated
-issue forms have been producing text at scale for over a decade, and identifying them
-is itself an established research problem \RESULT{BoDeGHa citation, verify}. The
-confounder is not hypothetical: in AIDev, \AidevCommentBotShare{} of the comments on
-agent-authored pull requests are themselves bot-authored. Any prevalence estimate that
-does not separate bot text from LLM text is measuring their sum, and any detector
-evaluation that does not report performance on bot text separately cannot say which of
-the two it is responding to.
+Machine-generated text in open-source repositories predates large language models by a
+decade. Dependency managers, release automation, continuous integration reporters and
+issue templates all produce text at scale, and identifying them is an established
+research problem \RESULT{BoDeGHa citation, verify}. The confounder is measurable: in
+AIDev, \AidevCommentBotShare{} of comments on agent-authored pull requests come from
+bots. An estimate that does not separate bot text from model text measures their sum,
+and a detector evaluation that does not report bot text separately cannot say which of
+the two it responds to.
 
 \subsection{Provenance and attribution infrastructure}
 \label{sec:background:provenance}

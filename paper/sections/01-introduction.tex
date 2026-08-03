@@ -1,138 +1,116 @@
 \section{Introduction}
 \label{sec:intro}
 
-In the space of two years, a new empirical literature has formed around a single
-question: how much of open-source software is now written by AI? The answers arrive as
-percentages. Some fraction of commits, of pull requests, of comments, of lines of code
-is reported as machine-generated, and those fractions are then used to argue about
-maintainer burden, review overhead, contribution quality and the long-run
-sustainability of open-source projects. The numbers circulate quickly, because the
-question matters and because the answers are alarming.
+Since 2024 a growing body of empirical work has estimated how much of open-source
+software is written by AI. The results are reported as percentages of commits, pull
+requests, comments or lines of code, and they are used to argue about maintainer burden,
+review overhead, contribution quality and project sustainability. Few of these estimates
+rest on a measurement instrument that has been validated on the kind of text it is
+applied to.
 
-Almost none of these numbers rest on a measurement instrument that has been validated
-in the domain where it is being applied.
-
-The instruments come in three families. Zero-shot statistical detectors such as
+Three families of instrument are in use. Zero-shot statistical detectors such as
 DetectGPT \citep{mitchell2023detectgpt}, Fast-DetectGPT \citep{bao2024fastdetectgpt} and
 Binoculars \citep{hans2024binoculars} score text by its likelihood under a language
-model. Heuristic filters match phrase lists, formatting signatures or punctuation
-patterns. Large language models are prompted to classify authorship directly. Each
-family was developed and benchmarked on a particular kind of text: news articles,
-student essays, Wikipedia paragraphs, and code drawn from curated programming
-benchmarks. Binoculars, to take the strongest published claim, reports detection of
-over \citednum{90\%} of ChatGPT-generated text at a false positive rate of \citednum{0.01\%}
-\citep{hans2024binoculars}. That claim was established on essay-length prose.
+model. Heuristic filters match phrase lists or formatting signatures. Large language
+models are prompted to classify authorship directly. All three were developed and
+benchmarked on news articles, student essays and curated programming benchmarks.
+Binoculars, the strongest published claim, reports detection of over \citednum{90\%} of
+ChatGPT-generated text at a false positive rate of \citednum{0.01\%}
+\citep{hans2024binoculars}, measured on essay-length prose.
 
-The artifacts of open-source software development are not essay-length prose. In the
-AIDev dataset of agent-authored contributions \citep{li2025aidev}, the median commit
-message is \AidevCommitMsgMedian{} characters long and the ninetieth percentile is
-\AidevCommitMsgPNinety{}. The median pull request body is \AidevBodyMedian{} characters.
-These texts are short, templated, written to a genre convention, and produced by a
-globally distributed contributor base writing in a second language. Every one of these
-properties is a known stressor for the detectors in question. Detector accuracy degrades
-sharply on short inputs, and \citet{liang2023biased} showed that GPT detectors
-systematically misclassify text by non-native English writers as machine-generated.
-Open-source repositories additionally carry more than a decade of pre-existing
-machine-generated text --- dependency bots, release automation, templated issue
-reports --- that predates large language models entirely and that no published
-prevalence study has been shown to exclude reliably.
+Open-source artifacts are not essay-length prose. In the AIDev dataset of agent-authored
+contributions \citep{li2025aidev}, the median commit message is
+\AidevCommitMsgMedian{} characters and the ninetieth percentile is
+\AidevCommitMsgPNinety{}; the median pull request body is \AidevBodyMedian{} characters.
+These texts are short, follow genre conventions, and are written by a globally
+distributed contributor base, most of whom write English as a second language. Each of
+these properties is a known difficulty for the detectors in question. Accuracy falls on
+short inputs, and \citet{liang2023biased} found that detectors classify writing by
+non-native English speakers as machine-generated at elevated rates. Open-source
+repositories also contain a decade of text produced by dependency bots, release
+automation and issue templates, all of which predate large language models and none of
+which published studies have been shown to exclude reliably.
 
-If the instruments are miscalibrated in this domain, the consequences are not evenly
-distributed. A detector with an inflated false positive rate does not merely add noise:
-because non-AI artifacts vastly outnumber AI ones in most historical samples, even a
-small false positive rate produces a large absolute number of false detections, and
-prevalence is overestimated systematically rather than randomly. The same asymmetry
-means that the bias documented by \citet{liang2023biased} would fall hardest on
-contributors already least well served by the ecosystem.
+Measurement error of this kind does not average out. Non-AI artifacts outnumber AI ones
+by a wide margin in historical samples, so even a small false positive rate produces
+many false detections and biases estimates upward rather than adding noise. The bias
+reported by \citet{liang2023biased} would fall on contributors who are already least
+well served by the ecosystem.
 
-\subsection{Auditing the instrument rather than the phenomenon}
+\subsection{Auditing the instrument}
 \label{sec:intro:inversion}
 
-This paper inverts the question. Rather than adding another prevalence estimate, it
-asks what the existing measurement instruments actually measure when applied to
-open-source artifacts, and what follows for the estimates already in the literature.
+This paper asks what the existing instruments measure when applied to open-source
+artifacts, and what follows for the estimates already published. Two sources of ground
+truth make the question tractable without human annotation, which matters because
+agreement on whether a text looks AI-written is itself what is in dispute.
 
-The inversion is made tractable by two sources of ground truth that require no human
-annotation --- an essential property, since human annotation of authorship is precisely
-what is unavailable at scale, and inter-rater reliability on ``does this look
-AI-written'' is exactly the thing under dispute.
+Agentic coding platforms leave attribution traces. When Devin, OpenAI Codex, GitHub
+Copilot, Cursor or Claude Code opens a pull request under its own account, authorship is
+declared by the platform rather than inferred. AIDev collects \AidevPRs{} such pull
+requests across \AidevRepos{} repositories, and \AidevTrailerRate{} of the commits in
+that dataset carry a \texttt{Co-authored-by} trailer, a second declared channel.
 
-\paragraph{Positives.} Agentic coding platforms leave attribution traces. When Devin,
-OpenAI Codex, GitHub Copilot, Cursor or Claude Code opens a pull request under its own
-account, authorship is declared by the platform rather than inferred. The AIDev
-dataset \citep{li2025aidev} collects \AidevPRs{} such pull requests across
-\AidevRepos{} repositories. A second declared channel, the \texttt{Co-authored-by}
-trailer, appears on \AidevTrailerRate{} of the commits in that dataset.
+Text written before large language models were publicly available cannot have been
+produced by them. Artifacts committed to the same repositories before the release of
+ChatGPT on \LlmCutoff{} therefore form a negative set whose composition follows from
+chronology rather than judgement. Any artifact a detector flags in this set is a false
+positive by construction, so the resulting rate is measured rather than estimated under
+assumptions.
 
-\paragraph{Negatives.} Text written before large language models were publicly
-available cannot have been produced by them. Artifacts committed to the same
-repositories before the release of ChatGPT on \LlmCutoff{} therefore form a negative set
-whose purity follows from chronology rather than from judgement. This yields a
-counterfactual test with an unusual property: every artifact a detector flags in this
-set is a false positive \emph{by construction}, with no annotation, adjudication or
-appeal. The resulting false positive rate is not an estimate of detector error under
-assumptions --- it is a direct measurement.
-
-Given measured sensitivity and specificity, published prevalence figures can then be
-corrected. The estimator is not new; it is standard in epidemiology, where the problem
-of inferring true disease prevalence from an imperfect screening test was solved by
-\citet{rogan1978estimating} nearly fifty years ago. Its application here is
-straightforward, and its absence from the software engineering literature on AI
-prevalence is, we argue, the central methodological gap.
+Given sensitivity and specificity, published figures can then be corrected.
+\citet{rogan1978estimating} solved the corresponding problem for screening tests in
+epidemiology in 1978. Applying that correction requires exactly the quantities that have
+not been measured for this domain, which is what Section~\ref{sec:validity} provides.
 
 \subsection{Why this matters now}
 \label{sec:intro:now}
 
-The scale of the downstream literature makes the gap consequential. The 2026 Mining
-Software Repositories Mining Challenge was built on AIDev and produced \citednum{62} accepted
-papers, studying merge and rejection rates, test coverage, continuous integration
-outcomes, security defects, refactoring behaviour, code clones and reviewer sentiment
-in agent-authored contributions. All of them take the attribution labels as given ---
-reasonably so, since AIDev's labels are platform-declared. But an entire research
-programme has now been built on top of authorship attribution in under two years,
-while the question of what attribution-by-detection actually measures, in the cases
-where declaration is absent, has gone unasked.
+The 2026 Mining Software Repositories Mining Challenge was built on AIDev and produced
+\citednum{62} accepted papers on merge and rejection rates, test coverage, continuous
+integration outcomes, security defects, refactoring behaviour, code clones and reviewer
+sentiment in agent-authored contributions. All of them treat the attribution labels as
+given, which is reasonable since those labels are platform-declared. A research
+programme has been built on authorship attribution in under two years, while what
+attribution by detection measures, in the common case where declaration is absent, has
+not been examined.
 
-That gap is beginning to be noticed from one side. \citet{khosravani2026census} audit
-the \emph{declaration} channels --- configuration files, commit-message markers,
-author identity, bot signatures --- across \citednum{180} million repositories, and find that
-single-signal detection undercounts badly: bot-account lookup alone recovers only \citednum{3.3\%}
-of the Claude Code commits their multi-method approach identifies. Their finding and
-ours are complementary and point in opposite directions. They show that
-\emph{declaration-based} measurement misses AI contributions that are real. We ask
-whether \emph{content-based} measurement invents AI contributions that are not. Between
-the two, a prevalence estimate can be bounded from both sides rather than reported as a
-point.
+\citet{khosravani2026census} examine the declaration channels themselves, including
+configuration files, commit-message markers, author identity and bot signatures, across
+\citednum{180} million repositories. They find that single-signal detection undercounts
+badly: bot-account lookup alone recovers \citednum{3.3\%} of the Claude Code commits
+their multi-method approach identifies. Their result and ours point in opposite
+directions. They show that declaration-based measurement misses real AI contributions;
+we ask whether content-based measurement reports contributions that are not there.
+Together the two bound an estimate from both sides.
 
 \subsection{Contributions}
 \label{sec:intro:contributions}
 
 \begin{enumerate}
-  \item \textbf{A criterion-validity evaluation} of the detection approaches used in the
-    open-source prevalence literature, against attribution-based ground truth, reported
-    per agent and per artifact genre rather than pooled (Section~\ref{sec:validity}).
-    Pooling matters more than it may appear: \AidevTopAgentShare{} of AIDev is a single
-    agent, so a pooled metric is that agent's metric wearing a general label.
-  \item \textbf{A counterfactual false positive measurement} on pre-ChatGPT artifacts,
-    where every detection is an error by construction, stratified by genre, language,
-    text length and project characteristics, and separated from the confounding
-    contribution of pre-LLM automation (Section~\ref{sec:validity}).
-  \item \textbf{Bias-corrected prevalence estimates} that propagate the measured error
-    rates through the Rogan--Gladen estimator, reported as intervals under best- and
-    worst-case detector assumptions and contrasted with the point estimates in the
-    literature (Section~\ref{sec:correction}).
-  \item \textbf{An interoperable provenance model} that represents authorship claims
-    together with their evidence type --- self-declared trailer, platform metadata,
-    agent account, or detector inference with a score --- so that an attribution can be
-    inspected and queried rather than taken on faith
+  \item A criterion-validity evaluation of the detection approaches used in the
+    open-source literature, against attribution-based ground truth, reported per agent
+    and per artifact genre (Section~\ref{sec:validity}). Reporting per agent is
+    necessary because \AidevTopAgentShare{} of AIDev is a single agent, so a pooled
+    metric describes that agent rather than agents in general.
+  \item A false positive measurement on pre-ChatGPT artifacts, where every detection is
+    an error by construction, stratified by genre, language, text length and project
+    characteristics, and separated from the contribution of pre-LLM automation
+    (Section~\ref{sec:validity}).
+  \item Corrected estimates that propagate the measured error rates through the
+    Rogan--Gladen estimator, reported as intervals under best- and worst-case detector
+    assumptions and set against the point estimates in the literature
+    (Section~\ref{sec:validity}).
+  \item A provenance model that represents an authorship claim together with its
+    evidence type, whether a self-declared trailer, platform metadata, an agent account,
+    or a detector score, so that attributions can be queried and inspected
     (Section~\ref{sec:provenance}).
-  \item \textbf{A replication package} containing the corpus specification, the detector
-    harness, the provenance vocabulary and all analysis code.
+  \item A replication package containing the corpus specification, the detector harness,
+    the provenance vocabulary and all analysis code.
 \end{enumerate}
 
-The argument of this paper is not that AI-generated content in open source is rare, nor
-that the concern motivating the prevalence literature is misplaced. It is that the
-field currently cannot tell the difference between a detector finding AI text and a
-detector finding short text, templated text, or text written by someone whose first
-language is not English --- and that this is a measurable, correctable state of affairs
-rather than an inherent limitation.
+We do not claim that AI-generated content in open source is rare, or that the concerns
+motivating this literature are misplaced. The claim is narrower: the field cannot
+currently separate a detector responding to AI text from one responding to short text,
+conventional text, or text written by a non-native speaker. That is measurable, and it
+is correctable.

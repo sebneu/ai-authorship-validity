@@ -57,25 +57,24 @@
 \maketitle
 
 \begin{abstract}
-\textbf{Context.} A rapidly growing body of empirical work estimates how much of
-open-source software is now written by AI, and a second body of work builds on those
-estimates to argue about maintainer burden, contribution quality and project
-sustainability. Nearly all of it rests on one of three measurement strategies:
-zero-shot statistical detectors, heuristic phrase and formatting filters, or
-large language models used as classifiers.
-\textbf{Objective.} None of these instruments has been validated against ground truth
-on open-source artifacts. They were benchmarked on news articles, student essays and
-curated code benchmarks, not on commit messages, pull request descriptions, issue
-reports or real-repository diffs. This paper inverts the prevailing question: instead
-of measuring how much AI-generated content exists, it measures what the instruments
-used to detect it actually detect.
-\textbf{Method.} We assemble ground truth without human annotation. Agent-attributed
-contributions from the AIDev dataset and \texttt{Co-authored-by} trailers provide a
-high-precision positive set; artifacts written in the same repositories before the
-public release of ChatGPT provide a negative set that is machine-generated-text-free by
-construction. We evaluate \RESULT{n} detection approaches across five artifact genres,
-stratified by agent, programming language, text length and project characteristics, and
-propagate the measured error rates into corrected prevalence estimates.
+\textbf{Context.} Recent empirical work estimates how much of open-source software is
+written by AI, and further studies build on those estimates to argue about maintainer
+burden, contribution quality and project sustainability. The estimates rest on three
+kinds of instrument: zero-shot statistical detectors, heuristic phrase and formatting
+filters, and language models used as classifiers.
+\textbf{Objective.} None of these has been validated against ground truth on
+open-source artifacts. They were benchmarked on news articles, student essays and
+curated code benchmarks rather than on commit messages, pull request descriptions,
+issue reports or repository diffs. We ask what these instruments measure when applied
+to open-source text, and what follows for the estimates already published.
+\textbf{Method.} We build ground truth without human annotation. Agent-attributed
+contributions from the AIDev dataset and \texttt{Co-authored-by} trailers give a
+positive set of \PositiveTexts{} texts across five artifact genres. Artifacts written
+in the same repositories before the public release of ChatGPT give a negative set in
+which any detection is an error by construction. We evaluate \RESULT{n} detection
+approaches, stratified by agent, programming language, text length and project
+characteristics, and propagate the measured error rates through the Rogan--Gladen
+correction.
 \textbf{Results.} \RESULT{RQ1--RQ3 headline results}
 \textbf{Conclusions.} \RESULT{conclusion}
 \keywords{AI-generated code \and Authorship attribution \and Measurement validity \and
@@ -86,7 +85,6 @@ Mining software repositories \and Provenance \and Agentic software engineering}
 \input{sections/02-background}
 \input{sections/03-ground-truth}
 \input{sections/04-detector-validity}
-\input{sections/05-prevalence-correction}
 \input{sections/06-provenance-model}
 \input{sections/07-discussion}
 \input{sections/08-threats}
