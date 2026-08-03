@@ -12,3 +12,4 @@ numpy==2.5.1
 
 # llm_judge talks to the H100 host over HTTP, so it needs no GPU locally.
 openai==2.52.1
+scipy==1.16.3            # AUROC / bootstrap intervals

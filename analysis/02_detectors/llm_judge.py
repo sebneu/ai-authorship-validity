@@ -54,6 +54,28 @@ USER_TEMPLATE = "Artifact type: {genre}\n\n---\n{text}\n---\n\nScore (0-100):"
 
 NUMBER = re.compile(r"\d{1,3}")
 
+# Reasoning models emit their chain of thought into a separate `reasoning` field and
+# only then produce content. Left on, Qwen3.6 spends the whole token budget thinking
+# and returns nothing: 512 tokens and 5.5s per call against 3 tokens and 0.2s with it
+# off. Over the full corpus that is the difference between hours and days, so thinking
+# is disabled. Models that do not understand the flag ignore it.
+NO_THINKING = {"chat_template_kwargs": {"enable_thinking": False}}
+
+
+def resolve_base_url() -> str:
+    """Base URL for the OpenAI-compatible route.
+
+    The host runs vLLM behind OpenWebUI, not Ollama. The `/ollama` path answers but
+    serves no models; the working route is OpenWebUI's own `/api`. LLM_BASE_URL wins if
+    set, otherwise it is derived from OLLAMA_URL so an existing .env keeps working.
+    """
+    explicit = get("LLM_BASE_URL")
+    if explicit:
+        return explicit.rstrip("/")
+    raw = require("OLLAMA_URL").rstrip("/")
+    root = raw.split("/ollama")[0]
+    return f"{root}/api"
+
 # Long inputs cost time and most artifacts are short; truncation is reported rather
 # than silently applied.
 MAX_CHARS = 6000
@@ -65,14 +87,12 @@ class LLMJudge:
     def __init__(self, model: str | None = None, workers: int = 8) -> None:
         from openai import OpenAI
 
-        base = require("OLLAMA_URL").rstrip("/")
-        self.model = model or get("OLLAMA_MODEL") or "llama3.1:8b"
+        self.model = model or require("LLM_MODEL")
         self.workers = workers
-        # The scripts in this project append /v1 to reach the OpenAI-compatible route.
         self.client = OpenAI(
-            base_url=f"{base}/v1",
+            base_url=resolve_base_url(),
             api_key=get("OLLAMA_API_KEY") or "unused",  # direct host access needs none
-            timeout=120,
+            timeout=180,
             max_retries=3,
         )
         self.version = f"llm_judge/{self.model}/{PROMPT_REVISION}"
@@ -106,7 +126,8 @@ class LLMJudge:
                 ],
                 temperature=0,
                 seed=7,
-                max_tokens=8,
+                max_tokens=16,
+                extra_body=NO_THINKING,
             )
             raw = (response.choices[0].message.content or "").strip()
         except Exception as exc:  # noqa: BLE001 - a failed call must not stop the sweep
@@ -127,18 +148,27 @@ class LLMJudge:
 
 
 @register("llm_judge", kind="llm", needs_gpu=False,
-          note="OpenAI-compatible endpoint on the H100 host; needs OLLAMA_URL")
+          note="general instruct model; set LLM_MODEL in .env")
 def _build() -> LLMJudge:
     return LLMJudge()
 
 
+@register("llm_judge_code", kind="llm", needs_gpu=False,
+          note="code-specialised judge, for the diff genre; set LLM_MODEL_CODE")
+def _build_code() -> LLMJudge:
+    judge = LLMJudge(model=require("LLM_MODEL_CODE"))
+    judge.name = "llm_judge_code"
+    return judge
+
+
 def _check() -> int:
     """Verify the endpoint, list the models it serves, and score two known texts."""
-    base = require("OLLAMA_URL")
+    base = resolve_base_url()
     print(f"endpoint: {base}")
     print(f"api key : {'set' if get('OLLAMA_API_KEY') else 'not set (direct host access)'}")
 
-    judge = LLMJudge()
+    configured = get("LLM_MODEL")
+    judge = LLMJudge(model=configured or "unset")
     try:
         models = sorted(m.id for m in judge.client.models.list().data)
     except Exception as exc:  # noqa: BLE001
@@ -148,10 +178,10 @@ def _check() -> int:
 
     print(f"\n{len(models)} model(s) served:")
     for m in models[:25]:
-        print(f"  {m}{'  <- OLLAMA_MODEL' if m == judge.model else ''}")
-    if judge.model not in models:
-        print(f"\nOLLAMA_MODEL is {judge.model!r}, which this host does not serve.")
-        print("Set OLLAMA_MODEL in .env to one of the above and pin it in the paper.")
+        print(f"  {m}{'  <- LLM_MODEL' if m == configured else ''}")
+    if not configured or configured not in models:
+        print(f"\nLLM_MODEL is {configured!r}, which this host does not serve.")
+        print("Set LLM_MODEL in .env to one of the above and pin it in the paper.")
         return 1
 
     print(f"\nsmoke test with {judge.model}:")
