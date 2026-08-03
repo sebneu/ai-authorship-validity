@@ -1,0 +1,11 @@
+# Corpus construction (analysis/01_corpus). Python 3.14.
+#
+# Detector dependencies (torch, transformers) are deliberately NOT here: scoring runs
+# on the GPU host, not on a laptop, and pinning CUDA builds alongside these would make
+# the corpus step unnecessarily heavy to install. They get their own file when
+# 02_detectors lands.
+
+huggingface_hub==1.26.0
+pandas==3.0.5
+pyarrow==25.0.0
+numpy==2.5.1

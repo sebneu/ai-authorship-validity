@@ -1,0 +1,85 @@
+{
+  "dataset": "hao-li/AIDev",
+  "revision": "68ed5f4b80d27a9e057fc57567f38bd322ac73ec",
+  "hub_last_modified": "2026-05-10 18:01:13+00:00",
+  "downloaded": "2026-08-03T13:46:24.950080+00:00",
+  "files": [
+    {
+      "table": "all_pull_request",
+      "file": "all_pull_request.parquet",
+      "bytes": 330776130,
+      "sha256": "3648c371a0518ce24a3b1322bad6c21e5021698eac515894bcec713d656bc223",
+      "purpose": "932k agent PRs: title + body (PR-description genre)"
+    },
+    {
+      "table": "all_repository",
+      "file": "all_repository.parquet",
+      "bytes": 6136253,
+      "sha256": "682a612d420420b1c738930332c78eae46268fc3bee7de12ca2f49da657741b1",
+      "purpose": "full repo frame (116k)"
+    },
+    {
+      "table": "all_user",
+      "file": "all_user.parquet",
+      "bytes": 2511706,
+      "sha256": "9e7c1226b4dd417223b0ad5fccd122639fa5f2e5f425e31e671428b3941e347c",
+      "purpose": "full user frame (72k)"
+    },
+    {
+      "table": "human_pull_request",
+      "file": "human_pull_request.parquet",
+      "bytes": 4387171,
+      "sha256": "910238f8fe5deb544ae82be343232ff6838f271f3de4b4e4787a515336a91248",
+      "purpose": "6.6k human-authored PRs, same era and repos"
+    },
+    {
+      "table": "issue",
+      "file": "issue.parquet",
+      "bytes": 3222463,
+      "sha256": "0787e44a5a3ea9ffd9fdc9d8deb49360cfa05171e13d84ec31df3232a21466b4",
+      "purpose": "agent-linked issue titles + bodies (issue genre)"
+    },
+    {
+      "table": "pr_comments",
+      "file": "pr_comments.parquet",
+      "bytes": 25857243,
+      "sha256": "b8d16135cdd33de13aae32d50523b2b77b508412b245f80f1e3664c9b8b7dacd",
+      "purpose": "PR comment bodies; carries user_type for bot separation"
+    },
+    {
+      "table": "pr_commit_details",
+      "file": "pr_commit_details.parquet",
+      "bytes": 485214032,
+      "sha256": "28efcc5b23c657fad8aa3da374fad40d164934e5aeefc5e23ad55ec69a592836",
+      "purpose": "commit messages + patches (commit + diff genres)"
+    },
+    {
+      "table": "pr_commits",
+      "file": "pr_commits.parquet",
+      "bytes": 8314097,
+      "sha256": "339228e250d420cd20ffe4b90583d57040263427ea605c1c039631b8ca2bfb4f",
+      "purpose": "commit messages without patches (lighter alternative)"
+    },
+    {
+      "table": "pull_request",
+      "file": "pull_request.parquet",
+      "bytes": 16855612,
+      "sha256": "08f520b5ef36b6281f82090db09ac14aefc3534ee113886e7bc85131fd8d214c",
+      "purpose": "33.6k curated agent PRs from 2,807 popular repos"
+    },
+    {
+      "table": "repository",
+      "file": "repository.parquet",
+      "bytes": 167251,
+      "sha256": "5b76717c39be1cada097d680aa0fcecd03611aa52ae05ef7f1d1e0e1e8b34192",
+      "purpose": "curated repo metadata: language, stars, forks, license"
+    },
+    {
+      "table": "user",
+      "file": "user.parquet",
+      "bytes": 68935,
+      "sha256": "1a3198503d7207c32d14f8767886ee56f1b9aecc59dcfc3319edb26123680a83",
+      "purpose": "agent-repo user accounts"
+    }
+  ]
+}
