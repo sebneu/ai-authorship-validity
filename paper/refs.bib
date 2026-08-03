@@ -1,0 +1,152 @@
+% Bibliography for "Who Wrote This? A Validity Audit of AI-Authorship Attribution
+% in Open-Source Software Artifacts"
+%
+% RULE: an entry enters this file only once its title, authors and headline numbers
+% have been checked against the arXiv abstract page, publisher page or conference
+% site. Unverified candidates stay in instructions/LITERATURE.md marked with a
+% warning until checked. Preprints marked below as PREPRINT must be re-checked for a
+% published version before submission.
+
+% ---------------------------------------------------------------------------
+% Ground truth / the dataset under study
+% ---------------------------------------------------------------------------
+
+@article{li2025aidev,
+  title        = {The Rise of {AI} Teammates in Software Engineering ({SE}) 3.0:
+                  How Autonomous Coding Agents Are Reshaping Software Engineering},
+  author       = {Li, Hao and Zhang, Haoxiang and Hassan, Ahmed E.},
+  journal      = {arXiv preprint arXiv:2507.15003},
+  year         = {2025},
+  doi          = {10.48550/arXiv.2507.15003},
+  note         = {PREPRINT. Introduces the AIDev dataset. v1: 456k agentic PRs,
+                  61k repositories, 47k developers, five agents. Dataset is
+                  versioned and growing -- pin the version used}
+}
+
+% ---------------------------------------------------------------------------
+% Detection methods (the instruments under audit)
+% ---------------------------------------------------------------------------
+
+@inproceedings{mitchell2023detectgpt,
+  title        = {{DetectGPT}: Zero-Shot Machine-Generated Text Detection using
+                  Probability Curvature},
+  author       = {Mitchell, Eric and Lee, Yoonho and Khazatsky, Alexander and
+                  Manning, Christopher D. and Finn, Chelsea},
+  booktitle    = {Proceedings of the 40th International Conference on Machine
+                  Learning (ICML)},
+  year         = {2023},
+  doi          = {10.48550/arXiv.2301.11305}
+}
+
+@inproceedings{bao2024fastdetectgpt,
+  title        = {Fast-{DetectGPT}: Efficient Zero-Shot Detection of
+                  Machine-Generated Text via Conditional Probability Curvature},
+  author       = {Bao, Guangsheng and Zhao, Yanbin and Teng, Zhiyang and
+                  Yang, Linyi and Zhang, Yue},
+  booktitle    = {Proceedings of the 12th International Conference on Learning
+                  Representations (ICLR)},
+  year         = {2024},
+  doi          = {10.48550/arXiv.2310.05130}
+}
+
+@inproceedings{hans2024binoculars,
+  title        = {Spotting {LLM}s with Binoculars: Zero-Shot Detection of
+                  Machine-Generated Text},
+  author       = {Hans, Abhimanyu and Schwarzschild, Avi and Cherepanova, Valeriia
+                  and Kazemi, Hamid and Saha, Aniruddha and Goldblum, Micah and
+                  Geiping, Jonas and Goldstein, Tom},
+  booktitle    = {Proceedings of the 41st International Conference on Machine
+                  Learning (ICML)},
+  year         = {2024},
+  doi          = {10.48550/arXiv.2401.12070}
+}
+
+@article{ghaleb2026fingerprinting,
+  title        = {Fingerprinting {AI} Coding Agents on {GitHub}},
+  author       = {Ghaleb, Taher A.},
+  journal      = {arXiv preprint arXiv:2601.17406},
+  year         = {2026},
+  doi          = {10.48550/arXiv.2601.17406},
+  note         = {PREPRINT, MSR 2026 Mining Challenge. 33,580 PRs, five agents,
+                  41 features, 97.2\% F1 multi-class agent identification.
+                  Used here as the supervised in-domain detector baseline}
+}
+
+% ---------------------------------------------------------------------------
+% Detector validity and bias (methodological ancestors)
+% ---------------------------------------------------------------------------
+
+@article{khosravani2026census,
+  title        = {Detecting {AI} Coding Agents in Open Source: A Validated
+                  Multi-Method Census of 180 Million Repositories},
+  author       = {Khosravani, Arsham and Mockus, Audris},
+  journal      = {arXiv preprint arXiv:2606.24429},
+  year         = {2026},
+  doi          = {10.48550/arXiv.2606.24429},
+  note         = {PREPRINT. Nearest related work. Metadata-channel detection
+                  validated by 495 hand labels with Wilson intervals; bot-account
+                  lookup recovers 3.3\% of Claude Code commits (30x recall gap)}
+}
+
+@article{liang2023biased,
+  title        = {{GPT} detectors are biased against non-native {English} writers},
+  author       = {Liang, Weixin and Yuksekgonul, Mert and Mao, Yining and
+                  Wu, Eric and Zou, James},
+  journal      = {Patterns},
+  volume       = {4},
+  number       = {7},
+  pages        = {100779},
+  year         = {2023},
+  doi          = {10.1016/j.patter.2023.100779}
+}
+
+@article{sadasivan2023reliably,
+  title        = {Can {AI}-Generated Text be Reliably Detected?},
+  author       = {Sadasivan, Vinu Sankar and Kumar, Aounon and Balasubramanian,
+                  Sriram and Wang, Wenxiao and Feizi, Soheil},
+  journal      = {arXiv preprint arXiv:2303.11156},
+  year         = {2023},
+  doi          = {10.48550/arXiv.2303.11156},
+  note         = {PREPRINT}
+}
+
+@inproceedings{ansari2025echoes,
+  title        = {Echoes of Automation: The Increasing Use of {LLM}s in Newsmaking},
+  author       = {Ansari, Abolfazl and Zhang, Delvin Ce and Tripto, Nafis Irtiza
+                  and Lee, Dongwon},
+  booktitle    = {Proceedings of the International Conference on Social Computing,
+                  Behavioral-Cultural Modeling and Prediction and Behavior
+                  Representation in Modeling and Simulation (SBP-BRiMS)},
+  year         = {2025},
+  doi          = {10.48550/arXiv.2508.06445},
+  note         = {40k+ news articles scored with Binoculars, Fast-DetectGPT and
+                  GPTZero -- the same instrument stack, news domain}
+}
+
+% ---------------------------------------------------------------------------
+% Prevalence correction
+% ---------------------------------------------------------------------------
+
+@article{rogan1978estimating,
+  title        = {Estimating prevalence from the results of a screening test},
+  author       = {Rogan, Walter J. and Gladen, Beth},
+  journal      = {American Journal of Epidemiology},
+  volume       = {107},
+  number       = {1},
+  pages        = {71--76},
+  year         = {1978},
+  doi          = {10.1093/oxfordjournals.aje.a112510}
+}
+
+% ---------------------------------------------------------------------------
+% Provenance modelling (RQ4)
+% ---------------------------------------------------------------------------
+
+@techreport{lebo2013provo,
+  title        = {{PROV-O}: The {PROV} Ontology},
+  author       = {Lebo, Timothy and Sahoo, Satya and McGuinness, Deborah},
+  institution  = {World Wide Web Consortium},
+  type         = {{W3C} Recommendation},
+  year         = {2013},
+  url          = {https://www.w3.org/TR/prov-o/}
+}
