@@ -8,11 +8,15 @@
 # changes between runs produces numbers that cannot be reproduced, which is the failure
 # this paper is about.
 
---extra-index-url https://download.pytorch.org/whl/cu124
+# The target GPU is an RTX PRO 6000 Blackwell (compute capability 12.0, sm_120).
+# Wheels built for CUDA 12.4 carry no sm_120 kernels and fail at load with
+# "no kernel image is available for execution on the device". Blackwell needs
+# CUDA 12.8 and PyTorch 2.7 or newer -- do not downgrade these two pins.
+--extra-index-url https://download.pytorch.org/whl/cu128
 
-torch==2.5.1
-transformers==4.46.3
-accelerate==1.1.1
+torch==2.7.1
+transformers==4.53.2
+accelerate==1.8.1
 sentencepiece==0.2.0
 
 # Shared with the corpus stage; repeated so this file installs standalone.
