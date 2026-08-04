@@ -61,6 +61,20 @@ NUMBER = re.compile(r"\d{1,3}")
 # is disabled. Models that do not understand the flag ignore it.
 NO_THINKING = {"chat_template_kwargs": {"enable_thinking": False}}
 
+# Consecutive transport failures tolerated before giving up. A few are normal under
+# concurrency; a run of them means the endpoint is gone.
+TRANSPORT_ERROR_LIMIT = 20
+
+
+def _is_transport_error(exc: Exception) -> bool:
+    """Network or DNS failure, as opposed to the model refusing to answer."""
+    name = type(exc).__name__
+    if name in {"APIConnectionError", "APITimeoutError", "InternalServerError"}:
+        return True
+    text = str(exc).lower()
+    return any(k in text for k in ("connection", "timed out", "name or service",
+                                   "nodename", "temporary failure", "unreachable"))
+
 
 def resolve_base_url() -> str:
     """Base URL for the OpenAI-compatible route.
@@ -97,6 +111,9 @@ class LLMJudge:
         )
         self.version = f"llm_judge/{self.model}/{PROMPT_REVISION}"
         self.truncated = 0
+        self.errors = 0
+        self.transport_errors = 0
+        self.unparseable = 0
         CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
     def _cache_path(self, text: str) -> Path:
@@ -130,11 +147,26 @@ class LLMJudge:
                 extra_body=NO_THINKING,
             )
             raw = (response.choices[0].message.content or "").strip()
-        except Exception as exc:  # noqa: BLE001 - a failed call must not stop the sweep
+        except Exception as exc:  # noqa: BLE001
+            # A model that declines to answer is data; a network that is not there is
+            # not. Silently returning NaN for the second would let a dropped VPN turn
+            # an eight-hour run into a file of missing values that looks like a result.
+            self.errors += 1
+            if _is_transport_error(exc):
+                self.transport_errors += 1
+                if self.transport_errors >= TRANSPORT_ERROR_LIMIT:
+                    raise RuntimeError(
+                        f"{self.transport_errors} consecutive connection failures to "
+                        f"{resolve_base_url()}. The host is unreachable (VPN down, or "
+                        f"the endpoint is off). Stopping rather than filling the run "
+                        f"with NaN."
+                    ) from exc
             return float("nan")
 
+        self.transport_errors = 0  # a success clears the streak
         match = NUMBER.search(raw)
         if not match:
+            self.unparseable += 1
             return float("nan")
         score = min(100.0, float(match.group())) / 100.0
 
@@ -144,7 +176,20 @@ class LLMJudge:
 
     def score(self, texts: list[str]) -> list[float]:
         with ThreadPoolExecutor(max_workers=self.workers) as pool:
-            return list(pool.map(self._ask, texts))
+            scores = list(pool.map(self._ask, texts))
+        missing = sum(1 for s in scores if s != s)
+        if missing:
+            share = 100 * missing / max(len(scores), 1)
+            print(
+                f"  {self.name}: {missing:,} of {len(scores):,} unscored ({share:.1f}%) "
+                f"-- {self.unparseable:,} unparseable, {self.errors - self.unparseable:,} errors"
+            )
+            if share > 20:
+                raise RuntimeError(
+                    f"{share:.0f}% of texts went unscored; refusing to report this as a "
+                    f"result. Check the endpoint and re-run: cached answers are kept."
+                )
+        return scores
 
 
 @register("llm_judge", kind="llm", needs_gpu=False,
