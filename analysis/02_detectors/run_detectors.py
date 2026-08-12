@@ -34,6 +34,19 @@ SCORES = ROOT / "data" / "processed" / "scores"
 FORBIDDEN = {"set", "label", "agent", "repo", "created_at", "matched", "ext", "genre"}
 
 
+def relative_if_possible(path: Path) -> str:
+    """Path relative to the repo root when it is inside it, absolute otherwise.
+
+    The corpus may be given as a relative path or live outside the tree on the GPU
+    host, and the manifest should record it either way rather than failing.
+    """
+    resolved = path.resolve()
+    try:
+        return str(resolved.relative_to(ROOT))
+    except ValueError:
+        return str(resolved)
+
+
 def score_detector(name: str, texts: list[str], batch_size: int) -> tuple[list[float], str, float]:
     detector = get(name).factory()
     started = time.perf_counter()
@@ -126,7 +139,7 @@ def main() -> int:
         json.dumps(
             {
                 "generated": datetime.now(UTC).isoformat(),
-                "corpus": str(args.corpus.relative_to(ROOT)),
+                "corpus": relative_if_possible(args.corpus),
                 "n_texts": len(texts),
                 "detectors": summary,
             },
