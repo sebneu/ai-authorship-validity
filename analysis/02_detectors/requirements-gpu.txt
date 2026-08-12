@@ -8,10 +8,12 @@
 # changes between runs produces numbers that cannot be reproduced, which is the failure
 # this paper is about.
 
-# The target GPU is an RTX PRO 6000 Blackwell (compute capability 12.0, sm_120).
-# Wheels built for CUDA 12.4 carry no sm_120 kernels and fail at load with
-# "no kernel image is available for execution on the device". Blackwell needs
-# CUDA 12.8 and PyTorch 2.7 or newer -- do not downgrade these two pins.
+# The allocated GPU is an H100 vGPU (H100L-94C, driver 595.71.05, CUDA 13.2), which is
+# Hopper / sm_90 and supported by every recent build. cu128 wheels run on a CUDA 13
+# driver because drivers stay backward compatible with older CUDA runtimes.
+#
+# Keep cu128 rather than chasing a CUDA 13 wheel: it is the well-tested combination and
+# nothing in this workload benefits from the newer runtime.
 --extra-index-url https://download.pytorch.org/whl/cu128
 
 torch==2.7.1

@@ -5,21 +5,47 @@ it without a back-and-forth.
 
 ## GPU
 
-**RTX PRO 6000 Blackwell (96 GB) is fine, and slightly better than the H100 PCIe here.**
-The workload is inference prefill on 7B models, which is compute- and
-bandwidth-bound rather than capacity-bound. 96 GB is more VRAM than an H100 PCIe (94 GB),
-and holds the two models Binoculars needs simultaneously with room to spare. No NVLink,
-FP64 or multi-GPU capability is required: everything runs on one card.
+**Allocated: one H100 as a vGPU, profile `H100L-94C`, driver 595.71.05, CUDA 13.2.**
+Two weeks of access from 2026-08-04.
 
-**One hard constraint.** Blackwell is compute capability 12.0 (`sm_120`). PyTorch wheels
-built for CUDA 12.4 or earlier contain no `sm_120` kernels and fail at model load with
-*"no kernel image is available for execution on the device"*. The host needs:
+That covers the requirement with room to spare. 94 GB of the card is assigned to the
+guest, `MIG M.` reports `N/A` so there is no partitioning, and the whole 94 GB is
+available to one process. Binoculars needs about 40 GB for two resident models, so
+nothing here is close to the limit. NVLink, FP64 and multi-GPU are not used.
 
-- NVIDIA driver **570 or newer**
-- **CUDA 12.8**
-- **PyTorch 2.7+** built for cu128 (pinned in `requirements-gpu.txt`)
+**The earlier Blackwell caveat does not apply.** An H100 is Hopper, compute capability
+9.0 (`sm_90`), which every PyTorch build since 2.0 supports. The `sm_120` problem was
+specific to RTX PRO 6000.
 
-This is the one setting that silently wastes a day if it is wrong.
+Driver 595 advertises CUDA 13.2, while the pinned PyTorch is built against CUDA 12.8.
+That combination is fine: NVIDIA drivers stay backward compatible with older CUDA
+runtimes, so a cu128 build runs on a CUDA 13 driver. Verify it once rather than assume
+it (see below) — the failure mode, if any, appears at the first `.cuda()` call, not at
+install time.
+
+Requirements, restated for the record:
+
+- NVIDIA driver 525 or newer (595.71.05 far exceeds this)
+- PyTorch built for cu126 or cu128; do not build against CUDA 13 unless a wheel is
+  actually available for the pinned version
+
+### Verify before the first long run
+
+```bash
+python -c "
+import torch
+print('torch', torch.__version__, 'cuda', torch.version.cuda)
+print('device', torch.cuda.get_device_name(0))
+print('capability', torch.cuda.get_device_capability(0))
+print('free/total GiB', [round(x/2**30, 1) for x in torch.cuda.mem_get_info()])
+x = torch.randn(4096, 4096, device='cuda', dtype=torch.bfloat16)
+print('matmul ok', (x @ x).sum().item() == (x @ x).sum().item())
+"
+```
+
+Expect capability `(9, 0)` and roughly 94 GiB total. If the matmul raises *"no kernel
+image is available"*, the wheel and the driver disagree and the CUDA build needs
+changing; nothing else in the setup is worth doing until this passes.
 
 ## VM sizing
 
