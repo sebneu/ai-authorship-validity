@@ -64,6 +64,9 @@ def main() -> int:
     ap.add_argument("--detectors", nargs="*", default=["all"])
     ap.add_argument("--batch-size", type=int, default=64)
     ap.add_argument("--limit", type=int, help="score only the first N texts (smoke test)")
+    ap.add_argument("--genres", nargs="*",
+                    help="restrict to these genres (DetectCodeGPT is code-specific, and "
+                         "at 51 passes per text the full corpus would take 30 hours)")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--corpus", type=Path, default=CORPUS)
     args = ap.parse_args()
@@ -84,6 +87,9 @@ def main() -> int:
         raise SystemExit(f"missing {args.corpus}\nrun: python ../01_corpus/freeze_corpus.py")
 
     corpus = pd.read_parquet(args.corpus)
+    if args.genres:
+        corpus = corpus[corpus.genre.isin(args.genres)]
+        print(f"restricted to {args.genres}: {len(corpus):,} texts")
     if args.limit:
         corpus = corpus.head(args.limit)
 
@@ -141,6 +147,7 @@ def main() -> int:
                 "generated": datetime.now(UTC).isoformat(),
                 "corpus": relative_if_possible(args.corpus),
                 "n_texts": len(texts),
+                "genres": args.genres or "all",
                 "detectors": summary,
             },
             indent=2,
