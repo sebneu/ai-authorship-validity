@@ -1,0 +1,19 @@
+# Artifacts whose authorship is asserted on detector evidence alone, in a stratum whose
+# measured false positive rate exceeds five per cent. These are the attributions a
+# prevalence estimate rests on and the ones least able to bear the weight.
+PREFIX aiprov: <https://w3id.org/aiprov#>
+SELECT ?genre ?detector (COUNT(DISTINCT ?artifact) AS ?artifacts) (AVG(?fpr) AS ?stratumFpr)
+WHERE {
+  ?claim aiprov:claimAbout ?artifact ; aiprov:hasEvidence ?evidence .
+  ?evidence a aiprov:DetectorEvidence ;
+            aiprov:stratumFalsePositiveRate ?fpr ;
+            aiprov:producedBy/aiprov:detector ?detector .
+  ?artifact aiprov:genre ?genre .
+  FILTER (?fpr > 0.05)
+  FILTER NOT EXISTS {
+    ?other aiprov:claimAbout ?artifact ; aiprov:hasEvidence ?declared .
+    ?declared a aiprov:DeclaredEvidence .
+  }
+}
+GROUP BY ?genre ?detector
+ORDER BY DESC(?artifacts)

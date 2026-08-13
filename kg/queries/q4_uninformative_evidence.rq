@@ -1,0 +1,15 @@
+# Detector evidence drawn from a stratum where sensitivity and specificity do not sum
+# above one. The instrument flags pre-language-model text at least as readily as agent
+# text there, so the evidence carries no information whatever the score.
+PREFIX aiprov: <https://w3id.org/aiprov#>
+SELECT ?detector ?genre (COUNT(*) AS ?claims) (AVG(?j) AS ?youdenJ)
+WHERE {
+  ?evidence a aiprov:DetectorEvidence ;
+            aiprov:stratumYoudenJ ?j ;
+            aiprov:producedBy/aiprov:detector ?detector .
+  ?claim aiprov:hasEvidence ?evidence ; aiprov:claimAbout ?artifact .
+  ?artifact aiprov:genre ?genre .
+  FILTER (?j <= 0.05)
+}
+GROUP BY ?detector ?genre
+ORDER BY ?youdenJ

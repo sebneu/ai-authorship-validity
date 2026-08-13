@@ -4,12 +4,60 @@
 \subsection{Prevalence studies of AI-generated contributions}
 \label{sec:background:prevalence}
 
-\RESULT{Table~1: the audit targets. One row per published prevalence study, with
-columns for detection strategy, artifact types scored, sample frame, reported
-prevalence, and whether in-domain validation was performed. Populate from
-LITERATURE.md section A once the four 2026 studies have been read in full and their
-pipelines extracted. The final column is expected to read ``none'' throughout; that
-column is the paper's motivation in one glance.}
+Four studies published in 2026 measure how much of open-source software is written by
+AI. Reading their methods sections shows that they do not share an instrument, and that
+the differences matter more than the shared headline. Table~\ref{tab:targets} sets them
+side by side.
+
+\begin{table}[t]
+\caption{The measurement studies this paper audits, by the instrument each uses to
+decide that an artifact is AI-written.}
+\label{tab:targets}
+\small
+\begin{tabular}{@{}p{0.20\textwidth}p{0.33\textwidth}p{0.16\textwidth}p{0.21\textwidth}@{}}
+\toprule
+Study & Instrument & Artifacts scored & Validation in domain \\
+\midrule
+\citet{ji2026exploratory} &
+Binoculars, Fast-DetectGPT, DetectGPT, Log-Likelihood, Log-Rank, Rank, LRR, Entropy;
+DetectCodeGPT for code &
+Code, code comments &
+None. Thresholds imported from a comment dataset and from other domains \\
+\addlinespace
+\citet{mao2026measurement} &
+66 keywords: six prefixes crossed with eleven tool names, then rule filtering and an
+LLM classifier &
+Code comments &
+100 files hand-checked per stage \\
+\addlinespace
+\citet{almujahid2026aiusage} &
+Explicit tool mentions, then two LLM classifiers aggregated by Dawid--Skene &
+Code comments &
+500 comments open-coded \\
+\addlinespace
+\citet{afroz2026aislop} &
+None. Pull request volume under a Bayesian structural time series &
+--- &
+Not applicable \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Two observations follow. The first is that the instruments divide into two families that
+are usually discussed as one. \citet{mao2026measurement} and \citet{almujahid2026aiusage}
+search for a contributor's own admission that a tool wrote the code, which is a
+declaration channel: precise where it fires, silent otherwise. \citet{ji2026exploratory}
+score the writing itself with the zero-shot detectors, which is an inference channel and
+the only one that can be wrong in both directions. \citet{afroz2026aislop} classify no
+text at all.
+
+The second is the last column. \citet{ji2026exploratory} state plainly that their corpus
+carries no ground-truth labels, so they could compute neither an AUROC nor a threshold
+of their own, and imported operating points derived from a separate comment dataset.
+Their own Table~1 reports the same detectors' thresholds moving across the four DetectRL
+domains --- Fast-DetectGPT between \citednum{4.19} and \citednum{5.48} against the
+\citednum{1.18} they adopt for software --- which is the transfer problem this paper
+measures, stated by an audit target itself.
 
 \subsection{Detecting machine-generated text}
 \label{sec:background:detection}
@@ -33,8 +81,13 @@ non-LLM automation sits in the same low-perplexity region as model output, and n
 in the method separates the two.
 
 Code-specific detection adapts the same intuition to a different surface form.
-\RESULT{DetectCodeGPT citation and one-paragraph method summary --- verify the exact
-venue, listed as unresolved in LITERATURE.md section B.}
+\citet{shi2025betweenlines} observe that machine-written code is unusually regular in
+its whitespace, and build DetectCodeGPT on that: rather than refilling masked spans with
+a second model, they perturb code by inserting spaces and newlines at half the available
+sites, and compare the rank the original tokens hold in the model's preference ordering
+with the rank they hold after perturbation. The statistic is the normalised perturbed
+log rank over \citednum{50} perturbed copies. The choice of rank over log-likelihood is
+deliberate, and reported to separate the classes better.
 
 The closest work to ours in the detection family is \citet{ghaleb2026fingerprinting},
 who trains a supervised classifier on \citednum{41} engineered features spanning commit messages,

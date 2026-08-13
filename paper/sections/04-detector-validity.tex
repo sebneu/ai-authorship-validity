@@ -4,30 +4,93 @@
 \subsection{Detector harness}
 \label{sec:validity:harness}
 
-\RESULT{Describe the unified harness: text in, score out; one adapter per detector;
-fixed seeds; pinned model and library versions. State the scoring models used for
-Fast-DetectGPT and Binoculars (Llama-3-8B class, run on local H100/H200 hardware) and
-note that no commercial detector is included, so the entire evaluation is reproducible
-from open weights. Report wall-clock cost per genre as a practical note for
-replication.}
+Every approach is wrapped in one interface: a list of texts goes in, a list of scores
+comes out, higher meaning more likely machine-written. Adapters normalise the direction
+of statistics that natively point the other way. Nothing else reaches an adapter. The
+driver passes strings rather than a data frame, so no agent label, repository, date or
+set membership is visible to a detector, and scores are joined back to their rows
+afterwards. The guard matters because most fields in the corpus correlate with the
+label: a detector shown a 2019 timestamp would not need to read the text.
 
-The evaluated approaches are: Fast-DetectGPT \citep{bao2024fastdetectgpt}, Binoculars
-\citep{hans2024binoculars}, \RESULT{DetectCodeGPT}, the heuristic filters reimplemented
-from the prevalence studies in Table~\RESULT{1}, an LLM-as-classifier baseline, and the
-supervised in-domain classifier of \citet{ghaleb2026fingerprinting} as a ceiling
-reference.
+Seven instruments run, in four groups. The zero-shot statistical detectors are
+Fast-DetectGPT \citep{bao2024fastdetectgpt}, Binoculars \citep{hans2024binoculars} and
+DetectCodeGPT \citep{shi2025betweenlines}, the stack \citet{ji2026exploratory} apply.
+The keyword group is the self-admission scan of \citet{mao2026measurement} and
+\citet{almujahid2026aiusage}, reconstructed from their described list of six prefix words
+crossed with eleven tool names. A set of formatting and phrasing rules stands for the
+screening maintainers apply informally; it reproduces no published pipeline and is
+reported as its own rule set rather than as anyone's method. An instructed language
+model is the fourth, prompted once with a prompt fixed before any result was seen. The
+supervised classifier of Section~\ref{sec:validity:ceiling} is the reference point
+rather than a candidate instrument.
+
+Scoring models are pinned with their weights recorded in each adapter's version string.
+Fast-DetectGPT scores under Qwen2.5-7B, Binoculars under the falcon-7b pair of its
+original publication, and DetectCodeGPT under CodeLlama-7b, which is the base model of
+its reference implementation and the configuration \citet{ji2026exploratory} deploy. No
+commercial detector is included, so the evaluation reproduces from open weights.
+
+Reimplementing DetectCodeGPT exposed a discrepancy worth recording, since it bears on
+reproducibility in this literature generally. The paper's Algorithm~1 subtracts a mean
+of normalised perturbed log rank terms, which contradicts its own definition of the
+statistic and the released code; and the paper gives a Poisson mean of two for newline
+insertion where the released code inserts exactly one, its Poisson draw commented out.
+We follow the released code, on the grounds that it is the artifact that produced the
+published numbers, and record the choice in the adapter version string.
 
 \subsection{RQ1: criterion validity}
 \label{sec:validity:rq1}
 
-\RESULT{AUROC per detector, per agent, per genre, with confidence intervals. Precision
-and recall at each detector's published operating point --- the operating point matters
-more than the AUROC, because the prevalence literature applies these thresholds as
-published. Calibration assessed by expected calibration error.}
+Table~\ref{tab:rq1} reports discrimination against the length-matched pre-ChatGPT
+negatives drawn from the same repositories.
 
-\RESULT{Figure: AUROC by genre and detector, with commit messages expected at the low
-end. If the expected pattern does not appear, report it plainly; a null result here is
-still a contribution, since no in-domain validation exists at all.}
+\input{generated/rq1_validity}
+
+The zero-shot detectors do not separate the classes. Across all \ZeroShotCells{}
+combinations of detector and genre, Binoculars and Fast-DetectGPT score between
+\ZeroShotAurocMin{} and \ZeroShotAurocMax{}, and every one of them falls below 0.5.
+Below chance is not a weaker version of the same finding. It means that in this corpus
+the two instruments rank human text written before ChatGPT existed as more
+machine-written than text an agent actually wrote, consistently and in every genre.
+Fast-DetectGPT on pull request bodies, at \ZeroShotAurocMin{}, would be a usable
+detector if its decision were reversed.
+
+Recall at a fixed operating point makes the practical consequence clearer than the
+AUROC. Calibrated to flag five per cent of pre-ChatGPT text, Binoculars recovers between
+one and six per cent of agent-authored artifacts, which is at or below what flagging at
+random would return. The prevalence literature applies these instruments at published
+thresholds rather than at thresholds fitted in domain, and
+\citet{ji2026exploratory} report the thresholds themselves moving by a factor of four
+across the domains they surveyed.
+
+The self-admission scan behaves in the opposite way and exactly as its mechanism
+predicts. Its false positive rate on pre-ChatGPT text is \SelfAdmissionFprMax{} per cent
+in every genre, since the tool names it searches for did not exist, and its recall never
+exceeds \SelfAdmissionRecallMax{} per cent, since an agent has no reason to write
+``generated by ChatGPT'' into its own commit message. It is a precise instrument for a
+quantity close to zero. An estimate built on it is a lower bound whose distance from the
+truth is unknown, which is the complement of the result \citet{khosravani2026census}
+report for the metadata channels.
+
+\subsubsection{The supervised ceiling}
+\label{sec:validity:ceiling}
+
+A detector can fail because the signal is absent or because the instrument misses it.
+Separating the two needs a classifier that is allowed to see the training distribution.
+Following \citet{ghaleb2026fingerprinting}, we fit gradient-boosted trees on features
+computed from the artifact text, cross-validated in folds grouped by repository so that
+no project's house style is learned in training and rewarded in test. His temporal
+features are excluded rather than unavailable: submission hour and day of week separate
+our classes perfectly and for the wrong reason, since the negatives predate
+2022-11-30 by construction. The remaining 24 features are text-derived, which is the
+point rather than a limitation, because a ceiling that sees more than the detectors it
+bounds is not a ceiling.
+
+The ceiling ranges from \CeilingAurocMin{} on diffs to \CeilingAurocMax{} on
+\CeilingBestGenre{}. The signal is therefore present in most genres and substantial in
+one, and the zero-shot detectors are not finding it. Diffs are the exception in both
+directions: the supervised model reaches only \CeilingAurocMin{} there, so the failure
+on code is partly a property of the artifact rather than of the instruments.
 
 \subsection{RQ2: structure of the errors}
 \label{sec:validity:rq2}
@@ -35,56 +98,82 @@ still a contribution, since no in-domain validation exists at all.}
 \subsubsection{The counterfactual false positive test}
 \label{sec:validity:counterfactual}
 
-\RESULT{False positive rate on N1 with bootstrap confidence intervals, stratified by
-genre, language, text length decile and project scale. Every flagged artifact here is an
-error by construction. This is the headline result of the paper and the input to
-Section~\ref{sec:correction}.}
+Every detection in the pre-ChatGPT set is an error by construction, so the rate needs no
+assumption about what the negatives contain. The rates in Table~\ref{tab:rq1} are held
+at five per cent by calibration, which makes the recall column the informative one; the
+question this subsection asks is which pre-ChatGPT text gets flagged, and Table~\ref{tab:rq2automation}
+answers it.
 
 \subsubsection{Automation as a confounder}
 \label{sec:validity:bots}
 
-\RESULT{False positive rate on N3 reported separately, quantifying how much apparent AI
-prevalence is pre-LLM automation. Compare against the N1 rate on human-authored text
-from the same period and repositories.}
+\input{generated/rq2_automation}
+
+Machine-generated text in repositories predates language models by a decade, and the
+instructed language model responds to it far more strongly than to the human text of the
+same period. Held at a five per cent false positive rate on pre-ChatGPT human writing,
+it flags between \JudgeBotFprMin{} and \JudgeBotFprMax{} per cent of pre-ChatGPT bot
+output, a factor of \JudgeBotRatioMin{} to \JudgeBotRatioMax{}. Dependency updates,
+release notes and continuous integration reports were written by scripts, and the judge
+is answering a question about machine authorship in general rather than about language
+models in particular. A prevalence estimate produced by such a judge counts a decade of
+automation as AI adoption.
+
+The formatting rules show the same pattern more weakly, which is expected of rules that
+match on structure that templates also produce. Binoculars and Fast-DetectGPT do not
+show it consistently, and on issue bodies and pull request bodies they flag bot text
+less often than human text.
 
 \subsubsection{Text length}
 \label{sec:validity:length}
 
-\RESULT{Detector performance as a function of text length, with the matched and
-unmatched comparison reported side by side; their difference estimates the length
-confound. Given a median commit message of \AidevCommitMsgMedian{} characters, this is
-expected to be the dominant error driver.}
-
-\subsubsection{Linguistic proxies}
-\label{sec:validity:language}
-
-\RESULT{Error rates against repository-level linguistic proxies, testing whether the
-non-native-writer bias of \citet{liang2023biased} reproduces in this domain. Frame
-carefully: the unit of analysis is the repository, not the individual, and no claim is
-made about any contributor.}
+Detector statistics are sample means over tokens, so their variance falls as texts
+lengthen, and performance should improve with length. It does for the supervised
+ceiling, which rises from \CeilingShortAuroc{} in the shortest quintile to
+\CeilingLongAuroc{} in the longest, and for the instructed model and the formatting
+rules. Fast-DetectGPT moves the other way, from \FastDetectShortAuroc{} to
+\FastDetectLongAuroc{}. Length is therefore not a sufficient explanation for the
+zero-shot failures: were short text the whole problem, the longest quintile would be
+where these detectors recover, and it is where one of them is furthest below chance.
 
 \subsubsection{Agent generalisation}
 \label{sec:validity:agents}
 
-\RESULT{Cross-agent results. Since \AidevTopAgentShare{} of the corpus is one agent,
-report explicitly whether detectors tuned on the aggregate transfer to the others, and
-what a pooled metric would have concealed.}
+Because \AidevTopAgentShare{} of AIDev is a single agent, the corpus allocates the
+positive set equally across the five and every metric above is reported per genre with
+that allocation. Per-agent results are in the replication package. The variation across
+agents is smaller than the variation across genres for every instrument, so the failures
+reported here are not an artifact of one platform's house style.
 
 \subsection{Corrected estimates (RQ3)}
 \label{sec:correction}
 
-\RESULT{Apply Equation~\eqref{eq:rogan-gladen} using the sensitivity and specificity
-measured in Section~\ref{sec:validity}, propagating uncertainty by bootstrap. Report
-corrected prevalence as an interval under best- and worst-case detector assumptions,
-and place the point estimates from the published studies in Table~\RESULT{1} alongside.}
+Equation~\eqref{eq:rogan-gladen} recovers prevalence from an observed rate given
+sensitivity and specificity. Its denominator is Youden's $J = s + c - 1$, reported in
+Table~\ref{tab:rq3}.
 
-\RESULT{Two boundary cases need explicit treatment. First, where $s + c - 1$ is small the
-correction is undefined in practice and the honest output is ``this design cannot
-estimate prevalence'' rather than a number with wide error bars; say so where it applies.
-Second, the corrected estimate can fall below zero when apparent prevalence is lower than
-the false positive rate; report the truncation and what it implies.}
+\input{generated/rq3_correction}
 
-\RESULT{Re-estimate prevalence on a defensible sample of post-2023 projects and contrast
-with the literature. State clearly which stratum the estimate covers: agent-attributed
-and detector-inferred contributions, not undeclared assisted authorship, which remains
-unobservable by this design.}
+The correction cannot be applied to most of this table. Of \CorrectionCells{} detector
+and genre combinations, \CorrectionUndefined{} have a bootstrap confidence interval for
+$J$ that covers zero, which makes the estimator undefined rather than imprecise. In a
+further \CorrectionOutOfRange{}, an observed rate of five per cent implies a corrected
+prevalence above one. That is not a large estimate but a contradiction: no prevalence in
+the unit interval could have produced that many flags through an instrument with that
+sensitivity, so the flagged set contains something the instrument was not measuring. The
+remaining \CorrectionEstimable{} cells admit a correction at an observed rate of five per
+cent, and most of them stop admitting one by twenty per cent.
+
+The consequence for the published estimates is not that they are too high by some
+factor we can supply. It is that the instruments behind them do not support a corrected
+estimate at all in this domain. Where a correction is available it still moves the
+number: at an observed rate of twenty per cent, the supervised ceiling on pull request
+bodies corrects to \CeilingCorrectedTwenty{}~per cent
+(\CeilingCorrectedTwentyLo{}--\CeilingCorrectedTwentyHi{}), and the instruments actually
+used in the literature give either an undefined result or a contradiction.
+
+We make no re-estimate of prevalence on a fresh sample. Doing so would require an
+instrument with a $J$ bounded away from zero on the genre being counted, and
+Table~\ref{tab:rq3} does not identify one among the detectors the literature uses. The
+honest output of this design is the negative result, together with the measurement that
+establishes it.

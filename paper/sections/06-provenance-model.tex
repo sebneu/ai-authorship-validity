@@ -1,52 +1,64 @@
-\section{Interoperable authorship provenance (RQ4)}
+\section{Recording attribution and its evidence (RQ4)}
 \label{sec:provenance}
 
-The preceding sections establish that detector output is an unreliable basis for
-authorship claims in this domain, and that its reliability varies systematically by
-genre, length and language. That conclusion has a design consequence: an authorship
-claim is only interpretable if the evidence behind it travels with it. A merged pull
-request labelled ``AI-authored'' on the basis of a platform account and one labelled
-``AI-authored'' on the basis of a detector score are not the same claim, and current
-tooling records them identically --- or not at all.
+Sections~\ref{sec:validity} and~\ref{sec:correction} measure how far a detector score is
+from an authorship fact. That distance is a property of the score, the genre and the
+threshold, and it is known once measured. The problem is that nothing in current
+practice carries it: a prevalence figure, a dashboard flag or a moderation decision
+records that an artifact was classified as AI-written and discards the grounds. This
+section describes a small vocabulary that keeps the two together, and shows the
+questions that become answerable once it does.
 
-\subsection{An evidence-typed provenance vocabulary}
+\subsection{The model}
 \label{sec:provenance:model}
 
-\RESULT{Present the PROV-O \citep{lebo2013provo} extension. Core classes and properties:
-the human orchestrator; the agent as a tool--model--version triple, since ``Claude Code''
-is not a model and the distinction matters for reproducibility; the activity
-(generation, review, merge); the artifact chain from prompt through diff and commit to
-pull request; and the attribution evidence type --- self-declared trailer, agent
-account, platform metadata, or detector inference carrying a score, a detector version
-and the measured error rate for that artifact's stratum.}
+\texttt{aiprov} extends PROV-O \citep{lebo2013provo} with one commitment: an authorship
+claim is a thing in its own right, carrying its own evidence, rather than a label on an
+artifact. An \texttt{aiprov:AuthorshipClaim} points at an \texttt{aiprov:Artifact} and,
+where one is named, at an \texttt{aiprov:CodingAgent} identified by tool, model and
+version, because the same tool across two model versions is not the same author. Each
+claim carries at least one \texttt{aiprov:Evidence}.
 
-\RESULT{Figure: the vocabulary as a diagram, with one worked example annotated end to
-end.}
+Evidence divides by how much it rests on inference. Declared evidence covers the
+channels where authorship is stated rather than inferred: a \texttt{Co-authored-by}
+trailer, an agent-owned account, platform metadata, and the contributor's own admission
+in prose. Detector evidence is the inferred case, and it is the only class that carries
+an error rate. A piece of detector evidence records the score, the threshold it was
+judged against, the activity that produced it with the detector version and the weights
+it loaded, and three quantities measured in this paper: the false positive rate,
+sensitivity and Youden's $J$ of the stratum the artifact falls in.
 
-The design commitment is that a detector-derived attribution is representable only
-\emph{with} its error characteristics attached. This is what makes the model useful
-rather than merely tidy: it renders the difference between declared and inferred
-authorship queryable.
+Two modelling choices are worth stating. The first is that an artifact with no claim is
+not an artifact claimed to be human-written. Absence of a claim represents absence of
+evidence, and conflating the two is how a detector's silence becomes a positive
+assertion about a contributor. The second is that competing claims about one artifact
+coexist. A pull request declared by an agent account and flagged by three detectors
+carries four claims, and a consumer can ask which of them would survive on its own.
 
 \subsection{Demonstration}
 \label{sec:provenance:demo}
 
-\RESULT{Populate a knowledge graph over the ground-truth corpus and answer competency
-questions in SPARQL. The queries should include at least: all merged pull requests whose
-authorship evidence is detector-only and whose stratum-specific false positive rate
-exceeds a threshold; the distribution of evidence types per repository; and
-contributions where declared and inferred authorship disagree. Report graph size and
-query timings.}
+The corpus, its detector scores and the stratum error rates of
+Tables~\ref{tab:rq1} and~\ref{tab:rq3} are loaded into a graph over a sample of the
+corpus. Five competency questions are answered in SPARQL, and each of them turns on the
+relation between an attribution and its grounds, so none is answerable from a table of
+scores. Two are worth reproducing here.
 
-\RESULT{Optional, cut first if the schedule slips: map AI-contribution clauses from
-CONTRIBUTING.md and AGENTS.md files to ODRL policies, making policy compliance
-checkable against the provenance graph.}
+The first asks which artifacts are attributed on detector evidence alone, in a stratum
+whose measured false positive rate exceeds five per cent, with no declared evidence to
+corroborate them. These are the attributions a prevalence estimate rests on, and the
+query returns them ranked by genre and detector. The second asks for claims whose
+supporting evidence comes from a stratum where $J$ is at or below zero. It returns the
+claims that carry no information whatever their score, which is a statement no score
+threshold can express and which the model makes queryable.
 
-\subsection{Positioning}
-\label{sec:provenance:positioning}
+A third question runs in the opposite direction: artifacts an agent is declared to have
+written that no detector flagged. That is the recall gap of the detector stack measured
+against ground truth, and in the sample graph it is largest on diffs and smallest on
+pull request bodies, which matches Table~\ref{tab:rq1}.
 
-\RESULT{Contrast with SLSA and in-toto. Supply-chain attestation answers ``what build
-process produced this artifact'' with cryptographic guarantees, but has no vocabulary
-for authorship of content, and no notion of evidence quality --- an attestation is
-either valid or not. Authorship attribution is irreducibly probabilistic, which is
-precisely why the evidence type must be first-class.}
+The vocabulary, the graph and the queries are in the replication package. The
+contribution is the design and its demonstration rather than the graph itself, which is
+built over a sample and serves no purpose as a dataset. We do not claim adoption: the
+model is worth its length only if it makes the error rates travel with the claims, and
+whether that happens depends on the platforms that issue them.

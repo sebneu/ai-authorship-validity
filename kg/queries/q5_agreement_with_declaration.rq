@@ -1,0 +1,17 @@
+# For each agent, how often a detector independently flags what the platform declared.
+# Agreement is the per-agent recall of the detector stack on ground truth.
+PREFIX aiprov: <https://w3id.org/aiprov#>
+SELECT ?tool (COUNT(DISTINCT ?artifact) AS ?declared)
+       (COUNT(DISTINCT ?alsoDetected) AS ?alsoFlagged)
+WHERE {
+  ?claim aiprov:claimAbout ?artifact ; aiprov:claimsAgent ?agent ; aiprov:hasEvidence ?ev .
+  ?ev a aiprov:AgentAccountEvidence .
+  ?agent aiprov:tool ?tool .
+  OPTIONAL {
+    ?other aiprov:claimAbout ?artifact ; aiprov:hasEvidence ?det .
+    ?det a aiprov:DetectorEvidence .
+    BIND(?artifact AS ?alsoDetected)
+  }
+}
+GROUP BY ?tool
+ORDER BY DESC(?declared)

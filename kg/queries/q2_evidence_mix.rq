@@ -1,0 +1,11 @@
+# How authorship is known, by genre. Declared evidence comes from the platform; detector
+# evidence is inferred and carries an error rate.
+PREFIX aiprov: <https://w3id.org/aiprov#>
+SELECT ?genre ?evidenceType (COUNT(*) AS ?n)
+WHERE {
+  ?claim aiprov:claimAbout ?artifact ; aiprov:hasEvidence ?evidence .
+  ?evidence a ?evidenceType .
+  ?artifact aiprov:genre ?genre .
+}
+GROUP BY ?genre ?evidenceType
+ORDER BY ?genre DESC(?n)

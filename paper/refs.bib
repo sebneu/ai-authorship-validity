@@ -152,3 +152,77 @@
   year         = {2013},
   url          = {https://www.w3.org/TR/prov-o/}
 }
+
+% ---------------------------------------------------------------------------
+% The measurement studies under audit (verified 2026-08-13 against arXiv)
+% ---------------------------------------------------------------------------
+
+@article{ji2026exploratory,
+  title        = {An Exploratory Study on {LLM}-Generated Code and Comments in
+                  Code Repositories},
+  author       = {Ji, Yongyi and Wang, Jiaji and Zhou, Yi and Chen, Fuxiang and
+                  Yang, Hongji},
+  journal      = {arXiv preprint arXiv:2607.01867},
+  year         = {2026},
+  doi          = {10.48550/arXiv.2607.01867},
+  note         = {PREPRINT. The primary audit target: applies Binoculars,
+                  Fast-DetectGPT, DetectGPT, Log-Likelihood, Log-Rank, Rank, LRR and
+                  Entropy to comments and DetectCodeGPT to code, over eight
+                  repositories, Oct 2021 to Oct 2025. States it had no ground truth
+                  and so could fit no threshold; imports operating points from the
+                  AISE comment dataset (their Table 3) and reports cross-domain
+                  threshold drift in their Table 1}
+}
+
+@article{mao2026measurement,
+  title        = {A Large-Scale Comprehensive Measurement of {AI}-Generated Code in
+                  Real-World Repositories},
+  author       = {Mao, Tianhao and Zhao, Dongfang and Tang, Haixu and Wang, Xiaofeng
+                  and Zhang, Hang},
+  journal      = {arXiv preprint arXiv:2603.27130},
+  year         = {2026},
+  doi          = {10.48550/arXiv.2603.27130},
+  note         = {PREPRINT, v3 of 1 Jul 2026. Self-admission keyword search: six
+                  prefix words crossed with eleven tool names, 66 keywords, followed
+                  by rule-based filtering and an LLM classifier. The keyword list
+                  itself is not printed in the paper}
+}
+
+@article{almujahid2026aiusage,
+  title        = {Empirical Study on the Characteristics and Evolution of {AI}-usage
+                  in {GitHub} Repositories: Evidence from Code Comments},
+  author       = {Al Mujahid, Abdullah and Chatterjee, Preetha and Imran,
+                  Mia Mohammad},
+  journal      = {arXiv preprint arXiv:2606.06843},
+  year         = {2026},
+  doi          = {10.48550/arXiv.2606.06843},
+  note         = {PREPRINT. 35,361 code comments that explicitly reference an AI
+                  tool; 500 open-coded, full set labelled by two LLM classifiers
+                  aggregated with Dawid-Skene}
+}
+
+@article{afroz2026aislop,
+  title        = {{``AI} Slop is {DDoSing} Open Source'': Understanding the Impact of
+                  {AI}-Generated Contributions on Open Source Sustainability},
+  author       = {Afroz, Sadia and Miller, Courtney and Menezes, Tyler and Gilmour,
+                  Edward and Sarma, Anita and Feng, Zixuan},
+  journal      = {arXiv preprint arXiv:2607.04003},
+  year         = {2026},
+  doi          = {10.48550/arXiv.2607.04003},
+  note         = {PREPRINT. Classifies no text: evidence is PR volume under a
+                  Bayesian structural time series over 294 repositories, plus
+                  interviews and a survey. Cited as motivation, not as an audit target}
+}
+
+@inproceedings{shi2025betweenlines,
+  title        = {Between Lines of Code: Unraveling the Distinct Patterns of Machine
+                  and Human Programmers},
+  author       = {Shi, Yuling and Zhang, Hongyu and Wan, Chengcheng and Gu, Xiaodong},
+  booktitle    = {Proceedings of the 47th International Conference on Software
+                  Engineering (ICSE)},
+  year         = {2025},
+  doi          = {10.48550/arXiv.2401.06461},
+  note         = {DetectCodeGPT. Statistic is the normalised perturbed log rank;
+                  perturbation inserts spaces and newlines at half the available
+                  sites, 50 perturbed copies, base model CodeLlama-7b-hf}
+}

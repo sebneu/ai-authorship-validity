@@ -1,0 +1,15 @@
+# Artifacts an agent is declared to have written that no detector flagged. The recall
+# gap, per genre: what a content-based estimate would miss even where the truth is known.
+PREFIX aiprov: <https://w3id.org/aiprov#>
+SELECT ?genre (COUNT(DISTINCT ?artifact) AS ?declaredUndetected)
+WHERE {
+  ?claim aiprov:claimAbout ?artifact ; aiprov:hasEvidence ?evidence .
+  ?evidence a aiprov:AgentAccountEvidence .
+  ?artifact aiprov:genre ?genre .
+  FILTER NOT EXISTS {
+    ?other aiprov:claimAbout ?artifact ; aiprov:hasEvidence ?det .
+    ?det a aiprov:DetectorEvidence .
+  }
+}
+GROUP BY ?genre
+ORDER BY DESC(?declaredUndetected)

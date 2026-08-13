@@ -1,0 +1,139 @@
+@prefix aiprov: <https://w3id.org/aiprov#> .
+@prefix prov:   <http://www.w3.org/ns/prov#> .
+@prefix rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:    <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:    <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+
+<https://w3id.org/aiprov> a owl:Ontology ;
+    dcterms:title "aiprov: authorship provenance for AI-assisted software artifacts" ;
+    dcterms:description """A small extension of PROV-O for recording who or what wrote a
+software artifact, and on what evidence. The design commitment is that an authorship
+claim is a first-class thing carrying its own evidence and its own error
+characteristics, rather than a label attached to an artifact. A detector score is
+therefore never stored as authorship; it is stored as one kind of evidence for a claim,
+alongside the measured false positive rate of the population stratum the artifact falls
+in, so that a consumer of the claim can weigh it.""" ;
+    owl:imports <http://www.w3.org/ns/prov-o> .
+
+##  Agents  ###################################################################
+
+aiprov:CodingAgent a owl:Class ;
+    rdfs:subClassOf prov:SoftwareAgent ;
+    rdfs:label "coding agent" ;
+    rdfs:comment "An autonomous or semi-autonomous tool that writes software artifacts. Identified by the triple of tool, model and version, because the same tool over two model versions is not the same author." .
+
+aiprov:tool a owl:DatatypeProperty ;
+    rdfs:domain aiprov:CodingAgent ; rdfs:range xsd:string ;
+    rdfs:label "tool" ; rdfs:comment "Platform name, for example OpenAI Codex or Claude Code." .
+
+aiprov:model a owl:DatatypeProperty ;
+    rdfs:domain aiprov:CodingAgent ; rdfs:range xsd:string ;
+    rdfs:label "model" ; rdfs:comment "Underlying model where it is disclosed. Often absent, and its absence is itself worth recording." .
+
+aiprov:agentVersion a owl:DatatypeProperty ;
+    rdfs:domain aiprov:CodingAgent ; rdfs:range xsd:string ; rdfs:label "agent version" .
+
+##  Artifacts  ################################################################
+
+aiprov:Artifact a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    rdfs:label "software artifact" ;
+    rdfs:comment "A unit of authored text: a commit message, pull request body, issue body, comment or diff." .
+
+aiprov:genre a owl:DatatypeProperty ;
+    rdfs:domain aiprov:Artifact ; rdfs:range xsd:string ;
+    rdfs:label "genre" ;
+    rdfs:comment "Artifact kind. Detector error rates differ by an order of magnitude across genres, so a claim is not interpretable without it." .
+
+aiprov:repository a owl:DatatypeProperty ;
+    rdfs:domain aiprov:Artifact ; rdfs:range xsd:string ; rdfs:label "repository" .
+
+aiprov:characterLength a owl:DatatypeProperty ;
+    rdfs:domain aiprov:Artifact ; rdfs:range xsd:integer ;
+    rdfs:label "character length" ;
+    rdfs:comment "Recorded because detector accuracy varies with it, so it is part of the stratum a claim belongs to." .
+
+##  Claims and evidence  ######################################################
+
+aiprov:AuthorshipClaim a owl:Class ;
+    rdfs:label "authorship claim" ;
+    rdfs:comment "An assertion that an artifact was written by an agent. Reified so that competing claims about one artifact can coexist and be compared by their evidence." .
+
+aiprov:claimAbout a owl:ObjectProperty ;
+    rdfs:domain aiprov:AuthorshipClaim ; rdfs:range aiprov:Artifact ; rdfs:label "claim about" .
+
+aiprov:claimsAgent a owl:ObjectProperty ;
+    rdfs:domain aiprov:AuthorshipClaim ; rdfs:range prov:Agent ;
+    rdfs:label "claims agent" ; rdfs:comment "The agent the claim names as author." .
+
+aiprov:hasEvidence a owl:ObjectProperty ;
+    rdfs:domain aiprov:AuthorshipClaim ; rdfs:range aiprov:Evidence ; rdfs:label "has evidence" .
+
+aiprov:Evidence a owl:Class ;
+    rdfs:label "evidence" ;
+    rdfs:comment "The grounds for a claim. The subclasses are ordered by how much they depend on inference rather than declaration." .
+
+aiprov:DeclaredEvidence a owl:Class ; rdfs:subClassOf aiprov:Evidence ;
+    rdfs:label "declared evidence" ;
+    rdfs:comment "Authorship stated by the platform or the contributor rather than inferred from the writing." .
+
+aiprov:TrailerEvidence a owl:Class ; rdfs:subClassOf aiprov:DeclaredEvidence ;
+    rdfs:label "trailer evidence" ;
+    rdfs:comment "A Co-authored-by trailer naming an agent." .
+
+aiprov:AgentAccountEvidence a owl:Class ; rdfs:subClassOf aiprov:DeclaredEvidence ;
+    rdfs:label "agent account evidence" ;
+    rdfs:comment "The contribution was opened by an account belonging to an agent platform." .
+
+aiprov:PlatformMetadataEvidence a owl:Class ; rdfs:subClassOf aiprov:DeclaredEvidence ;
+    rdfs:label "platform metadata evidence" .
+
+aiprov:SelfAdmissionEvidence a owl:Class ; rdfs:subClassOf aiprov:DeclaredEvidence ;
+    rdfs:label "self-admission evidence" ;
+    rdfs:comment "The artifact text names the tool that wrote it. Declared, but by the contributor in prose rather than by the platform in metadata, so it is unreliable in recall." .
+
+aiprov:DetectorEvidence a owl:Class ; rdfs:subClassOf aiprov:Evidence ;
+    rdfs:label "detector evidence" ;
+    rdfs:comment "A statistical or heuristic instrument scored the text above its threshold. Inferred, never declared, and therefore the only evidence class that carries an error rate." .
+
+##  Detector evidence: the parts that make a claim auditable  #################
+
+aiprov:producedBy a owl:ObjectProperty ;
+    rdfs:domain aiprov:DetectorEvidence ; rdfs:range aiprov:DetectionActivity ;
+    rdfs:label "produced by" .
+
+aiprov:DetectionActivity a owl:Class ;
+    rdfs:subClassOf prov:Activity ;
+    rdfs:label "detection activity" ;
+    rdfs:comment "One run of one detector at one configuration. Separate from the evidence so that a re-run under a corrected implementation is a different activity and the old claims stay attributable to the old one." .
+
+aiprov:detector a owl:DatatypeProperty ;
+    rdfs:domain aiprov:DetectionActivity ; rdfs:range xsd:string ; rdfs:label "detector" .
+
+aiprov:detectorVersion a owl:DatatypeProperty ;
+    rdfs:domain aiprov:DetectionActivity ; rdfs:range xsd:string ;
+    rdfs:label "detector version" ;
+    rdfs:comment "Adapter revision together with the weights it loaded. A score whose scoring model is unpinned cannot be reproduced." .
+
+aiprov:score a owl:DatatypeProperty ;
+    rdfs:domain aiprov:DetectorEvidence ; rdfs:range xsd:double ; rdfs:label "score" .
+
+aiprov:threshold a owl:DatatypeProperty ;
+    rdfs:domain aiprov:DetectorEvidence ; rdfs:range xsd:double ;
+    rdfs:label "threshold" ; rdfs:comment "The operating point at which this score counted as a detection." .
+
+aiprov:stratumFalsePositiveRate a owl:DatatypeProperty ;
+    rdfs:domain aiprov:DetectorEvidence ; rdfs:range xsd:double ;
+    rdfs:label "stratum false positive rate" ;
+    rdfs:comment "Measured share of artifacts in this detector, genre and threshold combination that are flagged although written before language models existed. The number that makes a detector-only claim inspectable instead of opaque." .
+
+aiprov:stratumSensitivity a owl:DatatypeProperty ;
+    rdfs:domain aiprov:DetectorEvidence ; rdfs:range xsd:double ;
+    rdfs:label "stratum sensitivity" .
+
+aiprov:stratumYoudenJ a owl:DatatypeProperty ;
+    rdfs:domain aiprov:DetectorEvidence ; rdfs:range xsd:double ;
+    rdfs:label "stratum Youden J" ;
+    rdfs:comment "Sensitivity plus specificity minus one, in this stratum. At or below zero the evidence is worthless in the strict sense that the instrument flags pre-language-model text at least as readily as agent text." .

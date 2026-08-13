@@ -18,7 +18,11 @@ import sys
 from pathlib import Path
 
 PAPER = Path(__file__).resolve().parent
-GENERATED = PAPER / "generated" / "corpus_numbers.tex"
+GENERATED_DIR = PAPER / "generated"
+# Every generator writes here, and each may define macros. Reading the directory rather
+# than one file means a new generator does not have to be registered in two places, and
+# a macro defined by any of them counts as defined.
+GENERATED = GENERATED_DIR / "corpus_numbers.tex"
 
 # Defined by the manuscript preamble rather than by the generator.
 PREAMBLE_MACROS = {"RESULT"}
@@ -59,7 +63,9 @@ def main() -> int:
         )
         return 2
 
-    defined = set(re.findall(r"\\newcommand\{\\(\w+)\}", GENERATED.read_text()))
+    defined: set[str] = set()
+    for path in sorted(GENERATED_DIR.glob("*.tex")):
+        defined |= set(re.findall(r"\\newcommand\{\\(\w+)\}", path.read_text()))
     known = defined | PREAMBLE_MACROS | LATEX_MACROS
 
     main_text = (PAPER / "main.tex").read_text()
