@@ -109,6 +109,43 @@ class CausalScorer:
         return TokenStats(logp_obs, mu_sum, var_sum, valid.sum(-1).clamp_min(1))
 
     @torch.no_grad()
+    def log_rank(self, texts: list[str]) -> torch.Tensor:
+        """Mean log rank of the observed tokens under the model's ordering.
+
+        The rank of a token is its position when the vocabulary is sorted by
+        likelihood, counting from one. DetectCodeGPT builds its statistic on this
+        rather than on log-probability because rank is a smoother summary of token
+        preference and separates the two classes better.
+
+        The reference implementation obtains the rank with a full argsort over the
+        vocabulary. Counting the entries that outrank the observed token gives the same
+        number at a fraction of the cost, since a sort orders 152k logits per position
+        when only a comparison is needed. With tied logits the count returns the best of
+        the tied ranks, which is the usual convention.
+        """
+        batch = self.encode(texts)
+        ids, mask = batch["input_ids"], batch["attention_mask"]
+        logits = self.logits(batch)[:, :-1, :]
+        labels = ids[:, 1:]
+        valid = mask[:, 1:].bool()
+
+        b, s, _ = logits.shape
+        total = torch.zeros(b, device=self.device)
+
+        for start in range(0, s, CHUNK):
+            end = min(start + CHUNK, s)
+            chunk = logits[:, start:end, :]
+            lab = labels[:, start:end]
+            ok = valid[:, start:end]
+
+            observed = chunk.gather(-1, lab.unsqueeze(-1))
+            rank = (chunk > observed).sum(-1) + 1
+            total += (rank.float().log() * ok).sum(-1)
+            del chunk, observed, rank
+
+        return total / valid.sum(-1).clamp_min(1)
+
+    @torch.no_grad()
     def cross_entropy_against(
         self, other: "CausalScorer", texts: list[str]
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:

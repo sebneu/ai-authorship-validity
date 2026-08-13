@@ -1,14 +1,17 @@
-"""Heuristic phrase and formatting filters.
+"""Formatting and phrasing markers of the kind maintainers screen on.
 
-Several published estimates of AI-authored contributions rest on rules of this kind
-rather than on a statistical detector: a phrase list, a formatting signature, a
-structural pattern. This adapter reimplements the mechanism so those rules can be
-evaluated on the same footing as the model-based detectors.
+Reading the four 2026 measurement studies settled what this adapter is and is not. None
+of them uses a stylistic rule list: two search for a developer's own admission that a
+tool wrote the code (`selfadmission.py`), one applies the zero-shot detectors, and the
+fourth estimates the contribution flood from pull request volume without classifying
+any text. The rules below therefore reproduce no published pipeline.
 
-The rule set below is a documented default, not a reproduction of any particular study.
-Extracting the exact lists from the four 2026 studies is an open item (see this
-directory's README). Until that is done, results from this adapter describe these rules
-and not those papers, and the distinction has to survive into the write-up.
+They are kept because the markers are real and are applied informally. Maintainers,
+triage bots and contribution policies screen on exactly these signals -- an emoji
+header, a bold label list, an offer of further help -- and the paper's question is what
+such a screen does to text that predates language models. Read the results as a
+statement about these rules, named in the paper as such, and never as a measurement of
+any study's method.
 
 Scores are the count of matched rules divided by the number of rules, so the output is
 in [0, 1] and comparable across texts of different length. Per-rule hits are available
@@ -98,6 +101,6 @@ class HeuristicDetector:
 
 
 @register("heuristics", kind="heuristic", needs_gpu=False,
-          note="phrase and formatting rules; default set pending extraction from the studies")
+          note="formatting and phrasing markers; reproduces no published pipeline")
 def _build() -> HeuristicDetector:
     return HeuristicDetector()

@@ -72,8 +72,8 @@ def load_adapters() -> None:
     """
     import importlib
 
-    for module in ("heuristics", "fingerprint", "fast_detect_gpt", "binoculars",
-                   "detect_code_gpt", "llm_judge"):
+    for module in ("heuristics", "selfadmission", "fingerprint", "fast_detect_gpt",
+                   "binoculars", "detect_code_gpt", "llm_judge"):
         try:
             importlib.import_module(module)
         except ImportError as exc:

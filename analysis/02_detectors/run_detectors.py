@@ -141,18 +141,24 @@ def main() -> int:
             }
         )
 
-    (SCORES / "run_manifest.json").write_text(
-        json.dumps(
-            {
-                "generated": datetime.now(UTC).isoformat(),
-                "corpus": relative_if_possible(args.corpus),
-                "n_texts": len(texts),
-                "genres": args.genres or "all",
-                "detectors": summary,
-            },
-            indent=2,
-        )
-    )
+    # Merge rather than overwrite. Detectors are run in separate sessions -- the GPU
+    # ones on the H100 host, the CPU ones here, DetectCodeGPT on its own because it
+    # takes a night -- so a manifest rewritten per run describes only the last detector
+    # and silently drops the provenance of every score file beside it.
+    manifest_path = SCORES / "run_manifest.json"
+    manifest = {"runs": {}}
+    if manifest_path.exists():
+        previous = json.loads(manifest_path.read_text())
+        manifest["runs"] = previous.get("runs", {})
+    for entry in summary:
+        manifest["runs"][entry["detector"]] = {
+            **entry,
+            "generated": datetime.now(UTC).isoformat(),
+            "corpus": relative_if_possible(args.corpus),
+            "n_texts": len(texts),
+            "genres": args.genres or "all",
+        }
+    manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True))
     print(f"\nwrote {SCORES}")
     return 0 if all(s["status"] == "ok" for s in summary) else 1
 

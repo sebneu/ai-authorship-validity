@@ -144,16 +144,45 @@ def load() -> pd.DataFrame:
         scores = pd.read_parquet(path).reset_index(drop=True)
         rows = align(corpus, scores, path.name)
         if rows is None:
-            print(f"  {path.stem:18} SKIPPED: {len(scores):,} scores cannot be aligned")
-            continue
+            # Never continue past this. An unalignable score file means the corpus was
+            # rebuilt under a detector, and every number downstream would be computed
+            # against the wrong texts while looking entirely healthy.
+            raise SystemExit(
+                f"{path.name}: {len(scores):,} scores match neither the corpus "
+                f"({len(corpus):,} rows) nor any single genre. Re-run this detector "
+                f"against the current corpus."
+            )
         merged = rows.copy()
         for col in ("detector", "version", "score"):
             merged[col] = scores[col].values
-        genres = "/".join(sorted(merged.genre.unique()))
-        print(f"  {path.stem:18} {len(merged):>7,} rows, "
-              f"{merged.score.nunique():>6,} distinct scores, {genres}")
+        scored = merged.score.notna()
+        genres = "/".join(sorted(merged.loc[scored, "genre"].unique()))
+        note = "" if scored.all() else f", {(~scored).sum():,} unscored"
+        print(f"  {path.stem:18} {scored.sum():>7,} scored, "
+              f"{merged.score.nunique():>6,} distinct{note}, {genres}")
         frames.append(merged)
     return pd.concat(frames, ignore_index=True)
+
+
+def coverage(df: pd.DataFrame) -> pd.DataFrame:
+    """Scored rows per detector and genre, with the share that came back missing.
+
+    A detector that silently drops a genre, or returns NaN for part of one, still
+    produces a full table of plausible-looking metrics. This makes the gaps explicit
+    before any of them are read.
+    """
+    rows = []
+    for (detector, genre), sub in df.groupby(["detector", "genre"]):
+        rows.append(
+            {
+                "detector": detector,
+                "genre": genre,
+                "n": len(sub),
+                "scored": int(sub.score.notna().sum()),
+                "missing_pct": round(100 * sub.score.isna().mean(), 2),
+            }
+        )
+    return pd.DataFrame(rows)
 
 
 def main() -> int:
@@ -165,6 +194,12 @@ def main() -> int:
     print("loading scores:")
     df = load()
     rng = np.random.default_rng(7)
+
+    gaps = coverage(df)
+    incomplete = gaps[(gaps.missing_pct > 0) & (gaps.missing_pct < 100)]
+    if len(incomplete):
+        print("\npartially scored cells:")
+        print(incomplete.to_string(index=False))
 
     rows = []
     for detector, dsub in df.groupby("detector"):
