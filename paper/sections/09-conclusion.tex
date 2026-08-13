@@ -1,12 +1,34 @@
 \section{Conclusion}
 \label{sec:conclusion}
 
-\RESULT{Restate the inversion and what measuring it produced: the measured error
-structure, the corrected prevalence intervals, and the provenance model. Keep to the
-evidence --- the paper's authority comes from having measured rather than argued.}
+A literature has grown up around measuring how much of open-source software is written
+by AI, and a further literature builds on those measurements. This paper asked what the
+measuring instruments do when applied to open-source artifacts, using ground truth that
+needs no human annotation: contributions agents are declared to have written, and
+artifacts committed to the same repositories before ChatGPT existed.
 
-\RESULT{Close on the constructive point. The instruments are correctable and the
-corrections are cheap: validate in domain, report per stratum, exclude pre-LLM
-automation, and prefer declared attribution to inferred attribution wherever the choice
-exists. Nothing in the finding argues that AI-generated content in open source is
-unimportant --- only that the field should be able to state how well it can measure it.}
+The answer is specific. Across \ZeroShotCells{} combinations of zero-shot detector and
+artifact genre, discrimination falls below chance in every one, so these instruments
+rank pre-ChatGPT human writing as more machine-written than agent output. A supervised
+classifier given the same text and nothing else reaches \CeilingAurocMax{} on pull
+request bodies, so the signal exists in at least one genre and the deployed instruments
+are not finding it. An instructed language model flags pre-ChatGPT automation between
+\JudgeBotFprMin{} and \JudgeBotFprMax{} per cent of the time while calibrated to five
+per cent on human text from the same period, which makes it a detector of machine
+authorship in general. The keyword scans two of the studies rely on carry no false
+positives and almost no recall. Propagating these rates through the Rogan--Gladen
+correction leaves \CorrectionUndefined{} of \CorrectionCells{} strata with an undefined
+estimate and \CorrectionOutOfRange{} more with an observed rate that no prevalence in
+the unit interval could have produced.
+
+The corrections are cheap where they are possible: validate on the genre being counted,
+report per stratum, separate pre-language-model automation, state the operating point
+with its measured error, and prefer declared attribution to inferred attribution
+wherever both exist. To make the last of these usable we give \texttt{aiprov}, a small
+PROV-O extension that records an authorship claim together with its evidence type and,
+for detector evidence, the measured error rate of the stratum it came from.
+
+None of this argues that AI-generated content in open source is rare or that the
+concerns motivating the literature are misplaced. The claim is narrower and, we think,
+prior to those questions: a field that reports prevalence should be able to say how well
+it can measure it, and on the evidence assembled here it currently cannot.

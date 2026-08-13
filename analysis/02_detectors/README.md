@@ -72,11 +72,18 @@ this paper is about.
 
 ## Open items
 
-1. Extract the exact phrase lists and formatting rules from the four 2026 prevalence
-   studies. `heuristics.py` implements the mechanism with a documented default set; the
-   published rules must replace it before the results stand, since the point is to
-   evaluate what those studies actually did.
-2. Pin the DetectCodeGPT implementation once the citation is confirmed
-   (`instructions/LITERATURE.md`, section B).
-3. Decide the LLM-judge prompt and fix it. Prompt variation is a confound; one prompt,
-   stated in the paper, reported as a limitation.
+All three are closed. What replaced them:
+
+1. **The four 2026 studies use no stylistic phrase list.** Two search for a
+   contributor's own admission that a tool wrote the code, and that mechanism is
+   reproduced in `selfadmission.py`; one applies the zero-shot stack; one classifies no
+   text at all. `heuristics.py` keeps its formatting rules but is now named for what it
+   is, a set of maintainer-style screening rules reproducing nobody's pipeline.
+2. **DetectCodeGPT is pinned** to Shi et al., ICSE 2025 (arXiv:2401.06461), and
+   reimplemented against the paper and the released code. The statistic is the
+   normalised perturbed log rank; the earlier log-likelihood version scored an
+   instrument nobody published and its results are archived unused.
+3. **The LLM-judge prompt is frozen** at revision `p1`, fixed before any result was
+   seen and quoted in the replication package. Prompt sensitivity is reported as a
+   limitation rather than explored, since exploring it would measure our prompt
+   engineering instead of the instrument.

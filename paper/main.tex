@@ -73,12 +73,27 @@ to open-source text, and what follows for the estimates already published.
 contributions from the AIDev dataset and \texttt{Co-authored-by} trailers give a
 positive set of \PositiveTexts{} texts across five artifact genres. Artifacts written
 in the same repositories before the public release of ChatGPT give a negative set in
-which any detection is an error by construction. We evaluate \RESULT{n} detection
-approaches, stratified by agent, programming language, text length and project
-characteristics, and propagate the measured error rates through the Rogan--Gladen
-correction.
-\textbf{Results.} \RESULT{RQ1--RQ3 headline results}
-\textbf{Conclusions.} \RESULT{conclusion}
+which any detection is an error by construction. We evaluate seven detection
+approaches, stratified by agent, artifact genre and text length, and propagate the
+measured error rates through the Rogan--Gladen correction.
+\textbf{Results.} The zero-shot detectors do not separate the classes. Across all
+\ZeroShotCells{} combinations of detector and genre they score between
+\ZeroShotAurocMin{} and \ZeroShotAurocMax{}, every one below chance, meaning they rank
+pre-ChatGPT human text as more machine-written than text an agent wrote. A supervised
+classifier trained in domain on the same text reaches \CeilingAurocMax{} on pull request
+bodies, so the signal is present and the instruments are missing it. An instructed
+language model flags \JudgeBotFprMin{} to \JudgeBotFprMax{} per cent of pre-ChatGPT bot
+output while held at five per cent on pre-ChatGPT human writing, so it responds to
+automation rather than to language models. The keyword scans used by two of the studies
+never exceed \SelfAdmissionRecallMax{} per cent recall at a false positive rate of
+\SelfAdmissionFprMax{}~per cent.
+\textbf{Conclusions.} Of \CorrectionCells{} detector and genre combinations,
+\CorrectionUndefined{} give an undefined correction and \CorrectionOutOfRange{} an
+observed rate no prevalence could produce, so most published estimates cannot be
+corrected rather than merely adjusted. Declaration channels are precise and nearly
+silent; content-based detection in this domain is neither. We give a provenance
+vocabulary that keeps an attribution together with the error rate of the stratum it came
+from.
 \keywords{AI-generated code \and Authorship attribution \and Measurement validity \and
 Mining software repositories \and Provenance \and Agentic software engineering}
 \end{abstract}

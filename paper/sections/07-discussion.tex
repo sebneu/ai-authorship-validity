@@ -4,40 +4,79 @@
 \subsection{Implications for the prevalence literature}
 \label{sec:discussion:prevalence}
 
-\RESULT{State what the measured error rates imply for the published figures, in terms
-of direction and magnitude. Be precise about which studies are affected and how: a
-study that scores long pull request bodies is in a different position from one that
-scores commit messages. Avoid the temptation to a single headline multiplier --- the
-error is stratum-dependent, and that is itself the finding.}
+The measured errors do not resolve into a single multiplier that could be applied to
+published figures, and the reason is itself the finding: the error depends on the
+stratum. A study that scores long pull request bodies is in a different position from
+one that scores commit messages, and the same detector moves from below chance on one
+genre to far below chance on another.
 
-\RESULT{Set the result against \citet{khosravani2026census}. They measure undercounting
-in declaration channels; we measure overcounting in content-based detection. If both
-hold, prevalence should be reported as an interval bounded from below by declaration and
-from above by corrected detection, and neither bound alone is a defensible estimate.}
+The direction of the effect differs by channel. \citet{ji2026exploratory} apply the
+zero-shot stack at thresholds imported from other domains. In our corpus those
+instruments are below chance in every genre, so their flagged set is not a noisy version
+of the AI-written set; it is close to unrelated to it, and the share of artifacts they
+flag is closer to a property of the threshold than of the population. The keyword scans
+of \citet{mao2026measurement} and \citet{almujahid2026aiusage} fail in the opposite
+direction. Their false positive rate in our negative set is zero, so what they count is
+real, and their recall on agent-authored text is under four per cent, so what they count
+is a small and unrepresentative slice. Their numbers are lower bounds whose distance
+from the truth is unknown, which is how they should be read.
+
+Our result and that of \citet{khosravani2026census} bound the problem from opposite
+sides. They show that declaration channels undercount, with bot-account lookup
+recovering a small fraction of the commits their multi-method approach finds. We show
+that content-based detection, offered as the remedy for exactly that gap, does not
+recover the difference in this domain. A defensible prevalence figure would therefore
+need a lower bound from declaration and an upper bound from corrected detection, and
+Table~\ref{tab:rq3} says the upper bound is not currently available. Reporting one
+number from either channel alone overstates what is known.
 
 \subsection{Implications for platform-level attribution}
 \label{sec:discussion:platform}
 
-\RESULT{Argue from the \AidevTrailerRate{} trailer rate and the platform-account
-channel: declared attribution works where it exists, and is cheap. The infrastructural
-recommendation follows --- treat \texttt{Co-authored-by} and equivalent metadata as
-first-class, and prefer declaration over inference wherever a choice exists.}
+Declared attribution works where it exists. \AidevTrailerRate{} of commits in AIDev
+carry a \texttt{Co-authored-by} trailer, and the agent-account channel is exact by
+construction: no inference, no threshold, no error rate to estimate. It is also cheap,
+since the platform already knows what opened the pull request.
+
+The contrast with the detection results is the argument for treating that metadata as
+infrastructure rather than as a convention. Every artifact whose authorship is declared
+at the moment of creation is one that no detector has to guess at later, and the
+guessing, as measured here, does not work. The recommendation is narrow and
+actionable: preserve agent attribution through merges, squashes and rebases, where it is
+currently lost; and prefer declaration over inference wherever both are available. This
+does not solve undeclared use, and nothing in this paper suggests it would.
 
 \subsection{Implications for research practice}
 \label{sec:discussion:practice}
 
-\RESULT{Concrete recommendations for future prevalence studies: validate in domain
-before estimating; report per-genre and per-agent rather than pooled; exclude pre-LLM
-automation explicitly and report it; state the operating point and its measured error;
-and correct the estimate rather than reporting apparent prevalence. Frame as a
-checklist, which is the form most likely to be adopted.}
+For studies that estimate how much of a corpus is AI-written, the results support five
+requirements. Validate the instrument in the domain and on the genre being counted
+before estimating, since thresholds do not transfer and this paper measures how far.
+Report per genre rather than pooled, because a pooled figure over genres with different
+error rates has no interpretation. Separate pre-language-model automation explicitly and
+report its rate, since an instructed model flags it far more readily than the human text
+beside it. State the operating point together with the sensitivity and specificity
+measured at it. Correct the estimate, and where the correction is undefined, report that
+rather than the uncorrected rate.
+
+The last is the one most likely to be resisted, because it converts a headline number
+into a statement that no number is available. That is nonetheless what the measurement
+supports for most of the instruments in current use.
 
 \subsection{Ethical considerations}
 \label{sec:discussion:ethics}
 
-\RESULT{Detector output is already used in governance contexts --- contribution
-policies, review triage, moderation. If false positive rates are elevated and unevenly
-distributed across linguistic populations, deploying these tools as gatekeeping
-mechanisms imposes costs on contributors who are already marginal. State this plainly
-and connect to the measured stratified error rates rather than asserting it in the
-abstract.}
+Detector output is already used in governance: contribution policies, review triage and
+moderation decisions. The error rates measured here are not evenly distributed. Rates
+are highest on short artifacts and on text produced by automation, and
+\citet{liang2023biased} report elevated false positives for writing by non-native
+English speakers, a population heavily represented among open-source contributors. We
+did not measure the linguistic dimension directly, and say so in
+Section~\ref{sec:threats}; the design would require repository-level language proxies
+and the claim would still be about repositories rather than people.
+
+What the measurement does support is narrower and sufficient. An instrument scoring
+below chance in every genre, used as a gate, rejects contributions at a rate unrelated
+to whether they were AI-written, and the cost falls on whoever writes text the detector
+finds unusual. Deploying these tools for gatekeeping is not supported by their measured
+performance in this domain.

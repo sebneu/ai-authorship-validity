@@ -118,12 +118,14 @@ being flagged as an AI contributor carries a governance cost.
 
 Validation of detectors outside their original domain remains rare. In the news domain,
 \citet{ansari2025echoes} apply Binoculars, Fast-DetectGPT and GPTZero to over
-\citednum{40,000} articles to estimate the growth of LLM use in journalism --- the same instrument stack
-as the software prevalence literature, applied with the same absence of in-domain
-validation. \RESULT{If the pre-GPT-era Washington Post counterfactual baseline is
-confirmed (see LITERATURE.md section C, currently unverified), cite it here as the
-direct methodological precedent for our design and state explicitly what our study adds:
-the software domain, code as well as prose, and the correction step.}
+\citednum{40,000} articles to estimate the growth of LLM use in journalism, the same
+instrument stack as the software prevalence literature. They also supply the design
+precedent for this paper: they score roughly \citednum{17,000} Washington Post articles
+published between \citednum{2012} and \citednum{2017}, where any detection is a false
+positive by construction, and use the result to bound the error of their estimate. Our
+study transfers that design to software artifacts, extends it from prose to code, and
+adds the step they do not take, which is propagating the measured error into the
+prevalence estimate itself.
 
 \subsection{Prevalence estimation under imperfect measurement}
 \label{sec:background:correction}
@@ -148,7 +150,7 @@ Section~\ref{sec:validity} supplies.
 Machine-generated text in open-source repositories predates large language models by a
 decade. Dependency managers, release automation, continuous integration reporters and
 issue templates all produce text at scale, and identifying them is an established
-research problem \RESULT{BoDeGHa citation, verify}. The confounder is measurable: in
+research problem \citep{golzadeh2021bodegha}. The confounder is measurable: in
 AIDev, \AidevCommentBotShare{} of comments on agent-authored pull requests come from
 bots. An estimate that does not separate bot text from model text measures their sum,
 and a detector evaluation that does not report bot text separately cannot say which of
@@ -157,9 +159,16 @@ the two it responds to.
 \subsection{Provenance and attribution infrastructure}
 \label{sec:background:provenance}
 
-\RESULT{PROV-O \citep{lebo2013provo} as the base vocabulary; SLSA and in-toto as the
-industrial supply-chain counterpart; existing software-provenance modelling work. Frame
-the gap: supply-chain provenance answers ``what produced this artifact'' for build
-systems, but has no vocabulary for ``who or what authored this content, and on what
-evidence''. Draft once the SLSA/in-toto positioning search in LITERATURE.md section F
-is complete.}
+Provenance has a standard vocabulary. PROV-O \citep{lebo2013provo} models entities,
+activities and agents together with the relations that connect them, and it is the base
+this paper builds on. Software supply-chain frameworks apply the same idea to builds,
+recording which toolchain, inputs and environment produced a released artifact so that a
+consumer can verify the chain.
+
+Both answer a different question from the one at issue here. Supply-chain provenance
+establishes what produced an artifact, under the assumption that the producer is known
+and attests to its own output. Authorship attribution asks who or what wrote the
+content, in a setting where the answer is often inferred rather than attested and where
+the inference has a measurable error rate. Neither vocabulary has a place to record that
+an attribution came from a detector, at which threshold, or how often that detector is
+wrong on artifacts of that kind. Section~\ref{sec:provenance} adds one.
