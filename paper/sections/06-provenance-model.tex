@@ -19,14 +19,44 @@ where one is named, at an \texttt{aiprov:CodingAgent} identified by tool, model 
 version, because the same tool across two model versions is not the same author. Each
 claim carries at least one \texttt{aiprov:Evidence}.
 
-Evidence divides by how much it rests on inference. Declared evidence covers the
-channels where authorship is stated rather than inferred: a \texttt{Co-authored-by}
-trailer, an agent-owned account, platform metadata, and the contributor's own admission
-in prose. Detector evidence is the inferred case, and it is the only class that carries
-an error rate. A piece of detector evidence records the score, the threshold it was
-judged against, the activity that produced it with the detector version and the weights
-it loaded, and three quantities measured in this paper: the false positive rate,
-sensitivity and Youden's $J$ of the stratum the artifact falls in.
+Evidence divides by how much it rests on inference. Table~\ref{tab:evidence} lists the
+classes.
+
+\begin{table}[t]
+\caption{Evidence classes in \texttt{aiprov}, ordered by how far the attribution is from
+a statement by the party that made the artifact.}
+\label{tab:evidence}
+\small
+\begin{tabular}{@{}p{0.26\textwidth}p{0.30\textwidth}p{0.34\textwidth}@{}}
+\toprule
+Class & Where it comes from & What it carries \\
+\midrule
+Agent account & The platform opened the contribution under its own account &
+Agent identity; no error rate \\
+\addlinespace
+Trailer & A \texttt{Co-authored-by} line naming an agent &
+Agent identity; no error rate \\
+\addlinespace
+Platform metadata & Other fields the platform records &
+Agent identity; no error rate \\
+\addlinespace
+Self-admission & The artifact text names the tool that wrote it &
+Agent identity; reliable where present, silent otherwise \\
+\addlinespace
+Detector & An instrument scored the text above a threshold &
+Score, threshold, detector version and weights, and the stratum's false positive rate,
+sensitivity and Youden's $J$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The first four rows are declared: authorship is stated rather than inferred, and there
+is no error rate to record because nothing was estimated. The last row is the inferred
+case, and it is the only one that carries the measurements of
+Sections~\ref{sec:validity:rq1} and~\ref{sec:correction}. Attaching them to the evidence
+rather than to the detector is what lets a consumer weigh one claim against another: the
+same score means different things on a pull request body and on a diff, and the stratum
+is what says so.
 
 Two modelling choices are worth stating. The first is that an artifact with no claim is
 not an artifact claimed to be human-written. Absence of a claim represents absence of

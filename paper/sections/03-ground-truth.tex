@@ -7,6 +7,21 @@ whether a text looks machine-written; labels derive from platform attribution or
 chronology. Positives and negatives are drawn from the same repositories wherever
 possible, so that differences between them are not differences between projects.
 
+\input{generated/t_corpus}
+
+Table~\ref{tab:corpus} gives the shape of the result before the detail. Read it one row
+at a time. The first row is the positive set: artifacts an agent is declared to have
+written, capped at 5{,}000 per genre so that no genre dominates. The second is the
+negative set that carries the argument, drawn from the same repositories but committed
+before ChatGPT was released, at roughly twice the size so that matching has room to
+choose from. The third is a smaller control of human pull requests written during the
+agent era, which removes the time gap at the cost of certainty about its labels. The
+fourth is pre-ChatGPT output from dependency bots and release automation, which is
+machine-written but not model-written, and is what
+Section~\ref{sec:validity:rq2:automation} uses to separate the two.
+
+The remaining subsections describe how each set was built.
+
 \subsection{Positive set}
 \label{sec:groundtruth:positives}
 

@@ -49,15 +49,39 @@ does not solve undeclared use, and nothing in this paper suggests it would.
 \subsection{Implications for research practice}
 \label{sec:discussion:practice}
 
-For studies that estimate how much of a corpus is AI-written, the results support five
-requirements. Validate the instrument in the domain and on the genre being counted
-before estimating, since thresholds do not transfer and this paper measures how far.
-Report per genre rather than pooled, because a pooled figure over genres with different
-error rates has no interpretation. Separate pre-language-model automation explicitly and
-report its rate, since an instructed model flags it far more readily than the human text
-beside it. State the operating point together with the sensitivity and specificity
-measured at it. Correct the estimate, and where the correction is undefined, report that
-rather than the uncorrected rate.
+Table~\ref{tab:checklist} turns the results into requirements for studies that estimate
+how much of a corpus is AI-written. Each row names the result behind it, so none of them
+rests on our judgement alone.
+
+\begin{table}[t]
+\caption{What each result asks of a prevalence study.}
+\label{tab:checklist}
+\small
+\begin{tabular}{@{}p{0.44\textwidth}p{0.46\textwidth}@{}}
+\toprule
+Requirement & Because \\
+\midrule
+Validate on the genre being counted before estimating &
+Thresholds do not transfer across domains, and every zero-shot cell in
+Table~\ref{tab:zeroshot} is below chance \\
+\addlinespace
+Report per genre, never pooled &
+Error rates differ by genre for every instrument (Tables~\ref{tab:zeroshot}
+and~\ref{tab:recall}) \\
+\addlinespace
+Separate pre-language-model automation and report its rate &
+An instructed model flags it \JudgeBotRatioMin{}--\JudgeBotRatioMax{} times more often
+than human text of the same period (Table~\ref{tab:automation}) \\
+\addlinespace
+State the operating point with the sensitivity and specificity measured at it &
+A share of artifacts flagged is uninterpretable without both \\
+\addlinespace
+Correct the estimate, and report when the correction is undefined &
+Most instrument and genre pairs admit no correction at all
+(Table~\ref{tab:estimable}) \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 The last is the one most likely to be resisted, because it converts a headline number
 into a statement that no number is available. That is nonetheless what the measurement

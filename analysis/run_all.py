@@ -26,6 +26,7 @@ PYTHON = sys.executable
 # name -> (script, extra args). Order is the dependency order: RQ1 writes the metrics
 # RQ3 reads, and the graph reads both.
 STAGES = [
+    ("corpus_table", ROOT / "analysis" / "01_corpus" / "corpus_table.py", []),
     ("fingerprint", ROOT / "analysis" / "02_detectors" / "fingerprint.py", []),
     ("rq1", ROOT / "analysis" / "03_validity" / "metrics.py", ["--bootstrap"]),
     ("rq2", ROOT / "analysis" / "03_validity" / "stratified.py", ["--bootstrap"]),
