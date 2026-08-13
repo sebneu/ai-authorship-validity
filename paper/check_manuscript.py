@@ -41,6 +41,19 @@ YEAR_RANGE = range(1900, 2101)
 # in the prose deliberately and have no place in the generated macros.
 ALLOWED_NUMBERS = {"1000"}
 
+# Filler and assistant-prose tells. The rule is in CLAUDE.md; enforcing it here means a
+# lapse is caught by the build rather than by a reader. "prevalence" is deliberately
+# absent: it is the technical term the paper is about.
+BANNED = [
+    "delve", "underscore", "leverage", "facilitate", "notably", "importantly",
+    "it is worth", "should be noted", "furthermore", "moreover", "in conclusion",
+    "robust", "comprehensive", "seamless", "paradigm", "cutting-edge", "transformative",
+    "holistic", "significantly", "various", "numerous", "a wide range of",
+    "plays a crucial role", "serves as", "empowers", "demonstrates the importance",
+    "highlights", "sheds light on", "utilize", "prior to", "subsequent to",
+    "due to the fact",
+]
+
 
 def sources() -> list[Path]:
     return sorted(PAPER.glob("sections/*.tex")) + [PAPER / "main.tex"]
@@ -99,6 +112,11 @@ def main() -> int:
                     f"{rel}:{line_no}: hand-typed number '{number}' -- "
                     "add a macro in profile_aidev.py instead"
                 )
+
+            lowered = stripped.lower()
+            for phrase in BANNED:
+                if re.search(r"(?<![a-z])" + re.escape(phrase), lowered):
+                    warnings.append(f"{rel}:{line_no}: banned expression '{phrase}'")
 
     # Count uses, not the \newcommand that defines it.
     open_results = sum(len(re.findall(r"\\RESULT\{", p.read_text())) for p in sources())
