@@ -56,8 +56,19 @@ ChatGPT existed to be more machine-written than text an agent actually produced.
 Fast-DetectGPT on pull request bodies, at \citednum{0.295}, would work as a detector if
 its decision were inverted.
 
-\RESULT{Add the DetectCodeGPT row's reading once the diff run lands; the table picks it
-up automatically.}
+The third row deserves separate attention. DetectCodeGPT is the one instrument here
+built specifically for code, and it runs on diffs alone because that is what it was
+designed for. It scores \citednum{0.418}, which is the lowest value in the Diff column:
+below Binoculars at \citednum{0.459} and below Fast-DetectGPT at \citednum{0.455} on the
+same texts. The detector specialised for code is the weakest of the three on code.
+
+This is worth stating carefully, because our first implementation of it gave
+\citednum{0.514} and would have supported a much milder conclusion. That version scored
+a perturbation discrepancy in log-likelihood; the published method uses the normalised
+perturbed log rank, with different perturbation parameters
+(Section~\ref{sec:groundtruth:harness}). The number above comes from the corrected
+implementation, and the correction moved the result away from chance rather than
+towards it.
 
 \subsubsection{The keyword scan, the formatting rules and the language model}
 \label{sec:validity:rq1:others}
@@ -219,7 +230,9 @@ correction divides by it.
 
 Table~\ref{tab:youden} gives $J$ for every instrument and genre. The zero-shot rows are
 negative, which follows from Table~\ref{tab:zeroshot}: a detector below chance has a
-sensitivity lower than its false positive rate. The keyword scan is positive but tiny,
+sensitivity lower than its false positive rate. DetectCodeGPT on diffs is
+\citednum{-0.029}, so a study counting AI-written code with it has no correctable
+measurement of the thing it set out to count. The keyword scan is positive but tiny,
 between \citednum{0.003} and \citednum{0.036}, because it almost never fires. Only the
 supervised ceiling and the LLM judge reach values where dividing by $J$ is a sensible
 operation.

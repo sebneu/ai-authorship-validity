@@ -124,7 +124,10 @@ def build(df: pd.DataFrame, stratum: pd.DataFrame, sample: int, seed: int) -> Gr
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--sample", type=int, default=8000)
+    # 2,500 artifacts keeps the competency queries answerable in seconds. rdflib
+    # evaluates FILTER NOT EXISTS per solution, so the two queries that ask what an
+    # artifact is *not* corroborated by grow steeply with graph size.
+    ap.add_argument("--sample", type=int, default=2500)
     ap.add_argument("--seed", type=int, default=7)
     ap.add_argument("--out", type=Path, default=ROOT / "data" / "processed" / "kg")
     args = ap.parse_args()
