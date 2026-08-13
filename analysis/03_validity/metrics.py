@@ -101,6 +101,26 @@ def operating_point(pos: np.ndarray, neg: np.ndarray, target: float) -> tuple:
     return best
 
 
+def align(corpus: pd.DataFrame, scores: pd.DataFrame, name: str) -> pd.DataFrame | None:
+    """Find the corpus rows a score file corresponds to.
+
+    Detectors may be run on a subset: DetectCodeGPT costs 51 forward passes per text,
+    so it runs on diffs alone. The written file then holds fewer rows than the corpus
+    and in the order of the filtered frame. We recover the subset by testing the full
+    corpus first, then each single genre, comparing the source_id sequence rather than
+    trusting length alone.
+    """
+    if len(scores) == len(corpus) and (scores.source_id.values == corpus.source_id.values).all():
+        return corpus
+    for genre in sorted(corpus.genre.dropna().unique()):
+        subset = corpus[corpus.genre == genre].reset_index(drop=True)
+        if len(subset) == len(scores) and (
+            subset.source_id.values == scores.source_id.values
+        ).all():
+            return subset
+    return None
+
+
 def load() -> pd.DataFrame:
     """Attach scores to corpus rows positionally, not by source_id.
 
@@ -122,19 +142,16 @@ def load() -> pd.DataFrame:
     frames = []
     for path in files:
         scores = pd.read_parquet(path).reset_index(drop=True)
-        if len(scores) != len(corpus):
-            print(f"  {path.stem:18} SKIPPED: {len(scores):,} scores for "
-                  f"{len(corpus):,} corpus rows (partial run?)")
+        rows = align(corpus, scores, path.name)
+        if rows is None:
+            print(f"  {path.stem:18} SKIPPED: {len(scores):,} scores cannot be aligned")
             continue
-        if not (scores.source_id.values == corpus.source_id.values).all():
-            raise SystemExit(
-                f"{path.name} is not in corpus order; cannot align scores to rows"
-            )
-        merged = corpus.copy()
+        merged = rows.copy()
         for col in ("detector", "version", "score"):
             merged[col] = scores[col].values
-        distinct = merged.score.nunique()
-        print(f"  {path.stem:18} {len(merged):>7,} rows, {distinct:>6,} distinct scores")
+        genres = "/".join(sorted(merged.genre.unique()))
+        print(f"  {path.stem:18} {len(merged):>7,} rows, "
+              f"{merged.score.nunique():>6,} distinct scores, {genres}")
         frames.append(merged)
     return pd.concat(frames, ignore_index=True)
 
