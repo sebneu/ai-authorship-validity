@@ -168,6 +168,34 @@ thresholds moving across four benchmark domains, with Fast-DetectGPT between
 Transporting a threshold one domain further, from code comments to repository artifacts,
 is what Table~\ref{tab:published} measures.
 
+\subsubsection{Do the scores mean what they say?}
+\label{sec:validity:rq1:calibration}
+
+Studies use a detector score in two ways: compared against a threshold, and read
+directly as a confidence. The second needs the score to be calibrated, so that among
+artifacts scored 0.8 about eight in ten are agent-written.
+
+Only two of the seven instruments return a number that could be a probability. The LLM
+judge is asked for one, and the supervised classifier emits one. Binoculars,
+Fast-DetectGPT and DetectCodeGPT return unbounded statistics: a negated perplexity
+ratio, a standardised curvature, a rank ratio. There is no calibration to measure for
+them, which is worth stating because it is easy to forget when a number between
+\citednum{-13.9} and \citednum{0} is tabulated beside one between zero and one. A study
+reading those as confidences is reading something the instrument never offered.
+
+\input{generated/t_calibration}
+
+Table~\ref{tab:calibration} gives the error for the two that remain. The supervised
+classifier is well calibrated, between \citednum{0.008} and \citednum{0.041}, which is
+what fitting a model on the distribution it is scored against should produce.
+
+The LLM judge is not. Its error is \citednum{0.064} on pull request bodies and between
+\citednum{0.326} and \citednum{0.420} on the other four genres. The direction is
+consistent: the judge answers ``not AI'' with high confidence for a large share of text
+that agents did write. Asked for a probability it returns something closer to a verdict,
+and the verdict is wrong often enough that the number attached to it carries little
+information outside one genre.
+
 \subsubsection{The keyword scan's trade}
 \label{sec:validity:rq1:trade}
 
