@@ -224,6 +224,41 @@ headings and bullet lists should do, since templates produce that structure too.
 Binoculars and Fast-DetectGPT do not show it consistently: on issue and pull request
 bodies they flag bot text less often than human text.
 
+\subsubsection{How much of this is the time gap?}
+\label{sec:validity:rq2:temporal}
+
+The negative set is clean because it is old, and age is a property of the writing as
+well as of the calendar. Conventions changed between 2019 and 2025: templates, checklists
+and Markdown structure are more common now than then. A detector responding to those
+would look like a detector responding to authorship.
+
+The corpus carries a second negative set for this reason. N2 is human-written pull
+requests from the agent era, taken from AIDev itself. It removes the time gap, at the
+cost of certainty about its labels, since a contemporaneous human pull request may
+contain undeclared assistance. It covers pull request bodies only.
+
+\input{generated/t_temporal}
+
+Table~\ref{tab:temporal} scores the same positives against both. Read the shift column.
+
+Fast-DetectGPT moves from \citednum{0.295} to \citednum{0.460}, a shift of
+\citednum{+0.165}. Most of its extreme reading against pre-ChatGPT text is therefore
+about the era rather than about authorship. Binoculars moves from \citednum{0.467} to
+\citednum{0.510} and reaches chance. This is the strongest qualification we can put on
+the result of Section~\ref{sec:validity:rq1:zeroshot}, and it should be applied to it:
+part of the below-chance behaviour is a temporal artifact. What survives the correction
+is that neither detector rises above chance once the artifact is removed.
+
+The other two rows move the opposite way. The formatting rules fall from
+\citednum{0.711} to \citednum{0.657} and the LLM judge from \citednum{0.939} to
+\citednum{0.829}. Separating agent text from contemporaneous human text is harder than
+separating it from pre-ChatGPT text, and there are two candidate reasons. The
+contemporaneous humans may be using AI without declaring it, in which case some of their
+pull requests are positives mislabelled as negatives. Or the era's conventions are part
+of what these instruments key on, so removing the era removes signal. The design cannot
+tell these apart, and this is the closest it comes to the undeclared-use stratum that
+Section~\ref{sec:threats} states is otherwise out of reach.
+
 \subsubsection{Does more text help?}
 \label{sec:validity:rq2:length}
 

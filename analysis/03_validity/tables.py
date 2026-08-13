@@ -221,6 +221,29 @@ def main() -> int:
         ["Detector"] + [a.replace("_", " ") for a in agent_cols], rows,
     )
 
+    # N2 covers pull request bodies only, so this is a single-genre table by necessity.
+    n2 = metrics[(metrics.genre == "pr_body") & metrics.auroc_n2.notna()]
+    rows = []
+    for key in ALL:
+        cell = n2[n2.detector == key]
+        if cell.empty:
+            continue
+        r = cell.iloc[0]
+        shift = r.auroc_n2 - r.auroc_n1
+        rows.append(
+            f"{LABELS[key]} & {fmt(r.auroc_n1)} & {fmt(r.auroc_n2)} & {shift:+.3f} \\\\"
+        )
+    written["t_temporal.tex"] = table(
+        "Pull request bodies scored against two negative sets: text from the same "
+        "repositories written before ChatGPT, and human-written pull requests from the "
+        "agent era.",
+        "tab:temporal",
+        ["Detector", "vs.\\ pre-ChatGPT", "vs.\\ contemporaneous", "Shift"], rows,
+        align="lrrr",
+        note="The supervised ceiling is absent: it is fit against the matched pre-ChatGPT "
+             "negatives and never scores the contemporaneous set.",
+    )
+
     # --- RQ3 -------------------------------------------------------------------
     written["t_youden.tex"] = table(
         "Youden's $J = s + c - 1$, the denominator of the Rogan--Gladen correction. "

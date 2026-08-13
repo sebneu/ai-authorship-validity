@@ -216,6 +216,13 @@ def main() -> int:
 
             a1 = auroc(pos, n1)
             lo, hi = boot_ci(pos, n1, args.bootstrap, rng)
+            # Discrimination against humans writing at the same time as the agents. The
+            # N1-to-N2 difference separates what a detector knows about authorship from
+            # what it knows about the era the text was written in. One bootstrap, not
+            # two: drawing the bounds from separate resamples would put a lower and an
+            # upper limit from different samples on the same interval.
+            a2 = auroc(pos, n2) if len(n2) else float("nan")
+            lo2, hi2 = boot_ci(pos, n2, args.bootstrap, rng) if len(n2) else (float("nan"),) * 2
             thr, achieved, recall = operating_point(pos, n1, TARGET_FPR)
             rows.append(
                 {
@@ -227,7 +234,9 @@ def main() -> int:
                     "auroc_n1": a1,
                     "ci_lo": lo,
                     "ci_hi": hi,
-                    "auroc_n2": auroc(pos, n2) if len(n2) else float("nan"),
+                    "auroc_n2": a2,
+                    "ci_n2_lo": lo2,
+                    "ci_n2_hi": hi2,
                     "threshold": thr,
                     "fpr_achieved": achieved,
                     "recall_at_fpr": recall,

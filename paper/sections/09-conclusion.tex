@@ -9,7 +9,10 @@ artifacts committed to the same repositories before ChatGPT existed.
 
 The answer is specific. Across \ZeroShotCells{} combinations of zero-shot detector and
 artifact genre, discrimination falls below chance in every one, so these instruments
-rank pre-ChatGPT human writing as more machine-written than agent output. A supervised
+rank pre-ChatGPT human writing as more machine-written than agent output. Part of that
+is an artifact of the negatives being old: scored against human pull requests from the
+agent era instead, Fast-DetectGPT recovers from \citednum{0.295} to \citednum{0.460} and
+Binoculars reaches chance. Neither rises above it. A supervised
 classifier given the same text and nothing else reaches \CeilingAurocMax{} on pull
 request bodies, so the signal exists in at least one genre and the deployed instruments
 are not finding it. An instructed language model flags pre-ChatGPT automation between
