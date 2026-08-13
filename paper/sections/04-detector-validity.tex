@@ -130,6 +130,44 @@ per cent. Most of these cells are at or below that. The supervised classifier in
 row recovers up to \CeilingRecallMax{} per cent on the same corpus at the same false
 positive rate.
 
+\subsubsection{What happens at the published threshold}
+\label{sec:validity:rq1:published}
+
+Every number so far comes from a threshold we calibrated on our own negatives, which
+answers how well an instrument could work if someone tuned it. That is not how these
+instruments are used. A study picks a published operating point and counts what lands
+above it.
+
+\citet{ji2026exploratory} publish the only operating points for the software-engineering
+domain, fitted on a dataset of code comments and then applied to repository artifacts.
+Two are for instruments in our harness on a comparable scale: Binoculars at
+\citednum{-1.00} and Fast-DetectGPT at \citednum{1.18}. We apply them unchanged.
+
+\input{generated/t_published}
+
+Table~\ref{tab:published} gives the share of pre-ChatGPT text each threshold flags.
+Every one of those flags is a false positive, because the text predates ChatGPT.
+
+Read the Binoculars row from the right. On diffs it flags \citednum{98.9}~per cent of
+pre-ChatGPT code. On issue bodies \citednum{92.7}, on pull request bodies
+\citednum{91.9}, and on commit messages, its best genre, \citednum{51.4}. A study
+counting AI-written code at this operating point would report that almost all code
+written before ChatGPT existed was written by AI.
+
+Fast-DetectGPT at \citednum{1.18} behaves in the opposite way, flagging between
+\citednum{2.1} and \citednum{13.1}~per cent. Its recall on agent text is no better: at
+most \citednum{12.0}~per cent, and on pull request bodies \citednum{0.8}~per cent
+against a false positive rate of \citednum{8.2}. Youden's $J$ is at or below zero in
+nine of the ten cells in this table.
+
+The two failures have the same cause. A threshold is a property of a score distribution,
+and the distribution moves with the domain, the genre and the scoring model. The
+publishing paper reports this themselves: their Table~1 shows these detectors'
+thresholds moving across four benchmark domains, with Fast-DetectGPT between
+\citednum{4.19} and \citednum{5.48} against the \citednum{1.18} they adopt for software.
+Transporting a threshold one domain further, from code comments to repository artifacts,
+is what Table~\ref{tab:published} measures.
+
 \subsubsection{The keyword scan's trade}
 \label{sec:validity:rq1:trade}
 

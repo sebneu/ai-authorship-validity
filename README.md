@@ -15,6 +15,23 @@ agent-attributed contributions as a high-precision positive set and pre-ChatGPT 
 a near-certain negative set, then re-estimates published prevalence figures under the
 measured error rates.
 
+Seven instruments are evaluated: the zero-shot detectors the literature applies
+(Fast-DetectGPT, Binoculars, DetectCodeGPT), the self-admission keyword scan two of the
+audited studies use, a set of formatting rules, a language model prompted to classify,
+and a supervised classifier trained in domain as a ceiling reference.
+
+## Reproducing the results
+
+```bash
+python analysis/run_all.py     # everything downstream of the detector score files
+make -C paper                  # manuscript, with the consistency check
+```
+
+Corpus construction (`analysis/01_corpus/`) and GPU scoring (`analysis/02_detectors/`)
+are excluded from the runner: they need credentials or an H100, and neither changes
+except by a deliberate decision. `analysis/02_detectors/HOST_SETUP.md` covers the GPU
+host.
+
 ## Layout
 
 ```
