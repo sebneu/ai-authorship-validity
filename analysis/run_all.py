@@ -31,6 +31,7 @@ STAGES = [
     ("rq2", ROOT / "analysis" / "03_validity" / "stratified.py", ["--bootstrap"]),
     ("rq3", ROOT / "analysis" / "04_correction" / "rogan_gladen.py", ["--bootstrap"]),
     ("tables", ROOT / "analysis" / "03_validity" / "tables.py", []),
+    ("figures", ROOT / "analysis" / "03_validity" / "figures.py", []),
     ("kg", ROOT / "kg" / "build_graph.py", []),
     ("queries", ROOT / "kg" / "run_queries.py", []),
 ]

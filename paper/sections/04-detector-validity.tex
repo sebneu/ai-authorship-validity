@@ -1,179 +1,268 @@
-\section{Detector validity (RQ1 and RQ2)}
+\section{Results}
 \label{sec:validity}
 
-\subsection{Detector harness}
-\label{sec:validity:harness}
+\subsection{How to read the results}
+\label{sec:validity:howto}
 
-Every approach is wrapped in one interface: a list of texts goes in, a list of scores
-comes out, higher meaning more likely machine-written. Adapters normalise the direction
-of statistics that natively point the other way. Nothing else reaches an adapter. The
-driver passes strings rather than a data frame, so no agent label, repository, date or
-set membership is visible to a detector, and scores are joined back to their rows
-afterwards. The guard matters because most fields in the corpus correlate with the
-label: a detector shown a 2019 timestamp would not need to read the text.
+Every result below compares the same two sets. On one side are artifacts an agent is
+declared to have written. On the other are artifacts committed to the same repositories
+before ChatGPT was released, matched to the positives on length within genre. Any
+artifact a detector flags in the second set is an error, and we know this from the
+calendar rather than from a judgement about the text.
 
-Seven instruments run, in four groups. The zero-shot statistical detectors are
-Fast-DetectGPT \citep{bao2024fastdetectgpt}, Binoculars \citep{hans2024binoculars} and
-DetectCodeGPT \citep{shi2025betweenlines}, the stack \citet{ji2026exploratory} apply.
-The keyword group is the self-admission scan of \citet{mao2026measurement} and
-\citet{almujahid2026aiusage}, reconstructed from their described list of six prefix words
-crossed with eleven tool names. A set of formatting and phrasing rules stands for the
-screening maintainers apply informally; it reproduces no published pipeline and is
-reported as its own rule set rather than as anyone's method. An instructed language
-model is the fourth, prompted once with a prompt fixed before any result was seen. The
-supervised classifier of Section~\ref{sec:validity:ceiling} is the reference point
-rather than a candidate instrument.
+Two numbers recur. The area under the ROC curve says how well an instrument ranks agent
+text above pre-ChatGPT text; 0.5 is chance, and below 0.5 means the ranking is
+backwards. Recall at a fixed operating point says what share of agent artifacts an
+instrument recovers once its threshold is set to flag five per cent of pre-ChatGPT text.
+The second number matters more in practice, because that is how these instruments are
+used: a threshold is chosen and everything above it is counted.
 
-Scoring models are pinned with their weights recorded in each adapter's version string.
-Fast-DetectGPT scores under Qwen2.5-7B, Binoculars under the falcon-7b pair of its
-original publication, and DetectCodeGPT under CodeLlama-7b, which is the base model of
-its reference implementation and the configuration \citet{ji2026exploratory} deploy. No
-commercial detector is included, so the evaluation reproduces from open weights.
+Seven instruments run. Three are the zero-shot detectors the prevalence literature
+applies, one is the keyword scan two of the audited studies use, one is a set of
+formatting rules of the kind maintainers screen on, one is an instructed language model,
+and the last is a classifier we train ourselves as a reference point.
 
-Reimplementing DetectCodeGPT exposed a discrepancy worth recording, since it bears on
-reproducibility in this literature generally. The paper's Algorithm~1 subtracts a mean
-of normalised perturbed log rank terms, which contradicts its own definition of the
-statistic and the released code; and the paper gives a Poisson mean of two for newline
-insertion where the released code inserts exactly one, its Poisson draw commented out.
-We follow the released code, on the grounds that it is the artifact that produced the
-published numbers, and record the choice in the adapter version string.
+Figure~\ref{fig:auroc} places all of them on one axis. The rest of this section takes
+the result apart one question at a time.
 
-\subsection{RQ1: criterion validity}
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/f_auroc}
+\caption{Where each instrument sits relative to chance. One marker per artifact genre,
+the bar spanning an instrument's best and worst genre. Everything left of the vertical
+line ranks pre-ChatGPT human text above agent text.}
+\label{fig:auroc}
+\end{figure}
+
+\subsection{RQ1: can the instruments tell agent text from human text?}
 \label{sec:validity:rq1}
 
-Table~\ref{tab:rq1} reports discrimination against the length-matched pre-ChatGPT
-negatives drawn from the same repositories.
+\subsubsection{The zero-shot detectors}
+\label{sec:validity:rq1:zeroshot}
 
-\input{generated/rq1_validity}
+\input{generated/t_zeroshot}
 
-The zero-shot detectors do not separate the classes. Across all \ZeroShotCells{}
-combinations of detector and genre, Binoculars and Fast-DetectGPT score between
-\ZeroShotAurocMin{} and \ZeroShotAurocMax{}, and every one of them falls below 0.5.
-Below chance is not a weaker version of the same finding. It means that in this corpus
-the two instruments rank human text written before ChatGPT existed as more
-machine-written than text an agent actually wrote, consistently and in every genre.
-Fast-DetectGPT on pull request bodies, at \ZeroShotAurocMin{}, would be a usable
-detector if its decision were reversed.
+Table~\ref{tab:zeroshot} reads one detector per row and one artifact genre per column.
+Start with the Binoculars row. Its best genre is a commit message at
+\citednum{0.471}, and its worst is a comment at \citednum{0.413}. Both are below 0.5.
+Now the Fast-DetectGPT row: commit messages reach \citednum{0.498}, and pull request
+bodies fall to \citednum{0.295}.
 
-Recall at a fixed operating point makes the practical consequence clearer than the
-AUROC. Calibrated to flag five per cent of pre-ChatGPT text, Binoculars recovers between
-one and six per cent of agent-authored artifacts, which is at or below what flagging at
-random would return. The prevalence literature applies these instruments at published
-thresholds rather than at thresholds fitted in domain, and
-\citet{ji2026exploratory} report the thresholds themselves moving by a factor of four
-across the domains they surveyed.
+Every cell in this table is below chance. That is a stronger statement than poor
+performance, and it is worth being precise about what it means. A detector at 0.5 is
+uninformative. A detector below 0.5 is informative with its sign reversed: in this
+corpus, Binoculars and Fast-DetectGPT systematically judge human text written before
+ChatGPT existed to be more machine-written than text an agent actually produced.
+Fast-DetectGPT on pull request bodies, at \citednum{0.295}, would work as a detector if
+its decision were inverted.
 
-The self-admission scan behaves in the opposite way and exactly as its mechanism
-predicts. Its false positive rate on pre-ChatGPT text is \SelfAdmissionFprMax{} per cent
-in every genre, since the tool names it searches for did not exist, and its recall never
-exceeds \SelfAdmissionRecallMax{} per cent, since an agent has no reason to write
-``generated by ChatGPT'' into its own commit message. It is a precise instrument for a
-quantity close to zero. An estimate built on it is a lower bound whose distance from the
-truth is unknown, which is the complement of the result \citet{khosravani2026census}
-report for the metadata channels.
+\RESULT{Add the DetectCodeGPT row's reading once the diff run lands; the table picks it
+up automatically.}
 
-\subsubsection{The supervised ceiling}
+\subsubsection{The keyword scan, the formatting rules and the language model}
+\label{sec:validity:rq1:others}
+
+\input{generated/t_others}
+
+Table~\ref{tab:others} covers the three remaining candidate instruments. The keyword
+scan sits at almost exactly 0.5 in every genre. That is what a detector looks like when
+it almost never fires: it is not ranking anything, and Section~\ref{sec:validity:rq1:trade}
+takes it apart properly.
+
+The formatting rules do better, from \citednum{0.534} on diffs to \citednum{0.711} on
+pull request bodies, and the LLM judge better still, from \citednum{0.619} to
+\citednum{0.939}. Both are above chance, so both carry some signal. The pull request
+body is where each of them peaks, which is the genre where agent output is most
+templated: checklists, headings and summary sections. Section~\ref{sec:validity:rq2:automation}
+shows what else those instruments are picking up.
+
+\subsubsection{Is the signal there at all?}
 \label{sec:validity:ceiling}
 
-A detector can fail because the signal is absent or because the instrument misses it.
-Separating the two needs a classifier that is allowed to see the training distribution.
-Following \citet{ghaleb2026fingerprinting}, we fit gradient-boosted trees on features
-computed from the artifact text, cross-validated in folds grouped by repository so that
-no project's house style is learned in training and rewarded in test. His temporal
-features are excluded rather than unavailable: submission hour and day of week separate
-our classes perfectly and for the wrong reason, since the negatives predate
-2022-11-30 by construction. The remaining 24 features are text-derived, which is the
-point rather than a limitation, because a ceiling that sees more than the detectors it
-bounds is not a ceiling.
+A detector can fail for two reasons. The text may carry no usable signal, or the signal
+may be there and the instrument may miss it. Telling these apart needs a classifier that
+is allowed to see the training distribution.
 
-The ceiling ranges from \CeilingAurocMin{} on diffs to \CeilingAurocMax{} on
-\CeilingBestGenre{}. The signal is therefore present in most genres and substantial in
-one, and the zero-shot detectors are not finding it. Diffs are the exception in both
-directions: the supervised model reaches only \CeilingAurocMin{} there, so the failure
-on code is partly a property of the artifact rather than of the instruments.
+We fit gradient-boosted trees on \citednum{24} features computed from the artifact text,
+cross-validated in folds grouped by repository so that no project's house style is
+learned in training and rewarded in test. Following
+\citet{ghaleb2026fingerprinting} we would also have used submission hour and day of
+week, and we deliberately do not: those features separate our two classes perfectly
+because the negatives predate 2022-11-30 by construction, so a model using them would
+measure the corpus design rather than the writing.
 
-\subsection{RQ2: structure of the errors}
+\input{generated/t_ceiling}
+
+Table~\ref{tab:ceiling} answers the question. On pull request bodies the classifier
+reaches \CeilingAurocMax{}, which is close to perfect separation. On commit messages and
+issue bodies it reaches roughly \citednum{0.87}. So the signal is present, and in one
+genre it is strong.
+
+Two conclusions follow. For four of the five genres, the zero-shot detectors are not
+finding a signal that a modest classifier finds with the same input. Diffs are the
+exception: the ceiling there is only \CeilingAurocMin{}, so the difficulty of code is
+partly a property of the artifact rather than of the instruments.
+
+\subsubsection{What each instrument recovers in practice}
+\label{sec:validity:rq1:recall}
+
+\input{generated/t_recall}
+
+Table~\ref{tab:recall} is the practical version of the same question. Each threshold is
+set to flag five per cent of pre-ChatGPT text; the cells say what share of agent
+artifacts that buys.
+
+Read the first two rows against the last. Binoculars recovers between
+\citednum{1.4} and \citednum{6.0} per cent, and Fast-DetectGPT between \citednum{0.3} and
+\citednum{5.7} per cent. Flagging five per cent of artifacts at random would recover five
+per cent. Most of these cells are at or below that. The supervised classifier in the last
+row recovers up to \CeilingRecallMax{} per cent on the same corpus at the same false
+positive rate.
+
+\subsubsection{The keyword scan's trade}
+\label{sec:validity:rq1:trade}
+
+\input{generated/t_selfadmission}
+
+Table~\ref{tab:selfadmission} shows why the keyword scan's AUROC of 0.5 is misleading.
+Its false positive rate is \SelfAdmissionFprMax{}~per cent in every genre, and its
+recall never exceeds \SelfAdmissionRecallMax{}~per cent.
+
+Both numbers follow from the mechanism. The scan searches for tool names such as
+ChatGPT or Copilot next to a prefix word. No pre-ChatGPT artifact contains those names,
+so there are no false positives at all. Equally, an agent has no reason to write
+``generated by ChatGPT'' into its own commit message, so almost nothing is recovered.
+
+This makes the instrument precise and nearly silent. An estimate built on it is a lower
+bound, and nothing in the instrument says how far below the truth that bound sits. It is
+the exact complement of what \citet{khosravani2026census} find for metadata channels.
+
+\subsection{RQ2: where do the errors come from?}
 \label{sec:validity:rq2}
 
-\subsubsection{The counterfactual false positive test}
-\label{sec:validity:counterfactual}
+\subsubsection{The instruments respond to automation}
+\label{sec:validity:rq2:automation}
 
-Every detection in the pre-ChatGPT set is an error by construction, so the rate needs no
-assumption about what the negatives contain. The rates in Table~\ref{tab:rq1} are held
-at five per cent by calibration, which makes the recall column the informative one; the
-question this subsection asks is which pre-ChatGPT text gets flagged, and Table~\ref{tab:rq2automation}
-answers it.
+Repositories have contained machine-written text for a decade. Dependency bots, release
+automation and continuous integration reporters all produce text at scale, and all of it
+predates language models. If an instrument flags that text, it is answering a question
+about machine authorship in general.
 
-\subsubsection{Automation as a confounder}
-\label{sec:validity:bots}
+\input{generated/t_automation}
 
-\input{generated/rq2_automation}
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/f_automation}
+\caption{What each instrument flags when no language model was involved. The light bar
+is pre-ChatGPT human text, held at five per cent by calibration; the dark bar is
+pre-ChatGPT bot output scored at that same threshold.}
+\label{fig:automation}
+\end{figure}
 
-Machine-generated text in repositories predates language models by a decade, and the
-instructed language model responds to it far more strongly than to the human text of the
-same period. Held at a five per cent false positive rate on pre-ChatGPT human writing,
-it flags between \JudgeBotFprMin{} and \JudgeBotFprMax{} per cent of pre-ChatGPT bot
-output, a factor of \JudgeBotRatioMin{} to \JudgeBotRatioMax{}. Dependency updates,
-release notes and continuous integration reports were written by scripts, and the judge
-is answering a question about machine authorship in general rather than about language
-models in particular. A prevalence estimate produced by such a judge counts a decade of
-automation as AI adoption.
+Table~\ref{tab:automation} and Figure~\ref{fig:automation} give the answer for each
+instrument. Every threshold here flags five per cent of pre-ChatGPT human text, so five
+per cent is the reference point for every cell.
 
-The formatting rules show the same pattern more weakly, which is expected of rules that
-match on structure that templates also produce. Binoculars and Fast-DetectGPT do not
-show it consistently, and on issue bodies and pull request bodies they flag bot text
-less often than human text.
+The LLM judge row is the one to read first. It flags between \JudgeBotFprMin{} and
+\JudgeBotFprMax{} per cent of pre-ChatGPT bot output. That is \JudgeBotRatioMin{} to
+\JudgeBotRatioMax{} times its rate on human text from the same period and the same
+repositories. Asked whether a text was written by AI, it is largely answering whether
+the text was written by a machine of any kind. A prevalence estimate produced this way
+counts a decade of dependency-update messages as AI adoption.
 
-\subsubsection{Text length}
-\label{sec:validity:length}
+The formatting rules show the same pattern more weakly, which is what rules matching on
+headings and bullet lists should do, since templates produce that structure too.
+Binoculars and Fast-DetectGPT do not show it consistently: on issue and pull request
+bodies they flag bot text less often than human text.
 
-Detector statistics are sample means over tokens, so their variance falls as texts
-lengthen, and performance should improve with length. It does for the supervised
-ceiling, which rises from \CeilingShortAuroc{} in the shortest quintile to
-\CeilingLongAuroc{} in the longest, and for the instructed model and the formatting
-rules. Fast-DetectGPT moves the other way, from \FastDetectShortAuroc{} to
-\FastDetectLongAuroc{}. Length is therefore not a sufficient explanation for the
-zero-shot failures: were short text the whole problem, the longest quintile would be
-where these detectors recover, and it is where one of them is furthest below chance.
+\subsubsection{Does more text help?}
+\label{sec:validity:rq2:length}
 
-\subsubsection{Agent generalisation}
-\label{sec:validity:agents}
+Detector statistics are averages over tokens, so they should steady as texts lengthen.
 
-Because \AidevTopAgentShare{} of AIDev is a single agent, the corpus allocates the
-positive set equally across the five and every metric above is reported per genre with
-that allocation. Per-agent results are in the replication package. The variation across
-agents is smaller than the variation across genres for every instrument, so the failures
-reported here are not an artifact of one platform's house style.
+\input{generated/t_length}
 
-\subsection{Corrected estimates (RQ3)}
+Table~\ref{tab:length} splits each genre into five length bands, shortest on the left.
+The supervised ceiling behaves as expected, rising from \CeilingShortAuroc{} to
+\CeilingLongAuroc{}. The LLM judge and the formatting rules also improve.
+
+Fast-DetectGPT moves the other way, from \FastDetectShortAuroc{} in the shortest band to
+\FastDetectLongAuroc{} in the longest. This matters for the common explanation that
+these detectors fail on open-source text because the texts are short. If that were the
+whole story, the longest band is where they would recover. It is where one of them is
+furthest below chance.
+
+\subsubsection{Does any of it generalise across agents?}
+\label{sec:validity:rq2:agents}
+
+\input{generated/t_agents}
+
+Because \AidevTopAgentShare{} of AIDev is a single agent, a pooled number would describe
+that agent rather than agents in general. The corpus therefore allocates the positive
+set equally across the five, and Table~\ref{tab:agents} reports each separately.
+
+The spread across agents within a row is smaller than the spread across genres in the
+earlier tables. The failures reported here are a property of the instruments and the
+artifact types, not of one platform's house style.
+
+\subsection{RQ3: what does this do to a prevalence estimate?}
 \label{sec:correction}
 
-Equation~\eqref{eq:rogan-gladen} recovers prevalence from an observed rate given
-sensitivity and specificity. Its denominator is Youden's $J = s + c - 1$, reported in
-Table~\ref{tab:rq3}.
+\subsubsection{How much information is left to correct with}
+\label{sec:correction:youden}
 
-\input{generated/rq3_correction}
+Equation~\eqref{eq:rogan-gladen} recovers true prevalence from an observed rate, given
+sensitivity and specificity. Its denominator is Youden's $J = s + c - 1$, and the
+correction divides by it.
 
-The correction cannot be applied to most of this table. Of \CorrectionCells{} detector
-and genre combinations, \CorrectionUndefined{} have a bootstrap confidence interval for
-$J$ that covers zero, which makes the estimator undefined rather than imprecise. In a
-further \CorrectionOutOfRange{}, an observed rate of five per cent implies a corrected
-prevalence above one. That is not a large estimate but a contradiction: no prevalence in
-the unit interval could have produced that many flags through an instrument with that
-sensitivity, so the flagged set contains something the instrument was not measuring. The
-remaining \CorrectionEstimable{} cells admit a correction at an observed rate of five per
-cent, and most of them stop admitting one by twenty per cent.
+\input{generated/t_youden}
 
-The consequence for the published estimates is not that they are too high by some
-factor we can supply. It is that the instruments behind them do not support a corrected
-estimate at all in this domain. Where a correction is available it still moves the
-number: at an observed rate of twenty per cent, the supervised ceiling on pull request
-bodies corrects to \CeilingCorrectedTwenty{}~per cent
-(\CeilingCorrectedTwentyLo{}--\CeilingCorrectedTwentyHi{}), and the instruments actually
-used in the literature give either an undefined result or a contradiction.
+Table~\ref{tab:youden} gives $J$ for every instrument and genre. The zero-shot rows are
+negative, which follows from Table~\ref{tab:zeroshot}: a detector below chance has a
+sensitivity lower than its false positive rate. The keyword scan is positive but tiny,
+between \citednum{0.003} and \citednum{0.036}, because it almost never fires. Only the
+supervised ceiling and the LLM judge reach values where dividing by $J$ is a sensible
+operation.
 
-We make no re-estimate of prevalence on a fresh sample. Doing so would require an
-instrument with a $J$ bounded away from zero on the genre being counted, and
-Table~\ref{tab:rq3} does not identify one among the detectors the literature uses. The
-honest output of this design is the negative result, together with the measurement that
+\subsubsection{When the correction works at all}
+\label{sec:correction:estimable}
+
+\input{generated/t_estimable}
+
+Table~\ref{tab:estimable} asks a different question: given a study that reports flagging
+some share of artifacts, how often can that share be corrected? Each row is a reported
+share, and the three columns count what the estimator returns across all
+\CorrectionCells{} instrument and genre combinations.
+
+Take the first row. A study reporting five per cent flagged artifacts can be corrected in
+\CorrectionEstimable{} combinations. In \CorrectionUndefined{} the confidence interval
+for $J$ covers zero, so the estimator is undefined rather than imprecise. In
+\CorrectionOutOfRange{} the correction returns a prevalence above one, which is not a
+large estimate but a contradiction: no prevalence between zero and one could produce
+that many flags through an instrument with that sensitivity, so the flagged set must
+contain something the instrument was not measuring.
+
+Now read down the column. As the reported share rises, the estimable count falls. By
+twenty per cent, a figure well within the range these studies report, almost nothing is
+left.
+
+\subsubsection{Corrected estimates where they exist}
+\label{sec:correction:corrected}
+
+\input{generated/t_corrected}
+
+Table~\ref{tab:corrected} lists every instrument and genre for which a study reporting
+twenty per cent flagged artifacts could be corrected at all. The list is short, and the
+instruments on it are not the ones the literature uses: the supervised classifier is
+ours, and the LLM judge on pull request bodies is the single deployed instrument that
+survives.
+
+Where a correction is possible it still moves the number. The ceiling on pull request
+bodies corrects a reported twenty per cent to \CeilingCorrectedTwenty{}~per cent
+(\CeilingCorrectedTwentyLo{}--\CeilingCorrectedTwentyHi{}).
+
+We make no re-estimate of prevalence on a fresh sample. Doing so would need an
+instrument whose $J$ is bounded away from zero on the genre being counted, and
+Table~\ref{tab:youden} does not identify one among the detectors the literature uses.
+The result of this design is the negative one, together with the measurement that
 establishes it.

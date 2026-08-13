@@ -176,3 +176,31 @@ predicates, seeds and per-cell counts, together with the code that rebuilds it, 
 it can be reconstructed without redistributing repository content beyond what the
 licences allow. Every count reported in this paper is written into the manuscript source
 by the analysis scripts, so no figure in the text can drift from the data behind it.
+
+\subsection{The detector harness}
+\label{sec:groundtruth:harness}
+
+Every instrument is wrapped in one interface: a list of texts goes in, a list of scores
+comes out, higher meaning more likely machine-written. Adapters flip the sign of
+statistics that natively point the other way, so the direction is the same everywhere.
+
+Detectors see the text and nothing else. The driver passes plain strings rather than a
+data frame, so no agent label, repository name, date or set membership can reach an
+adapter, and scores are joined back to their rows afterwards. This guard matters because
+most fields in the corpus correlate with the label: an instrument shown a 2019 timestamp
+would not need to read the text at all.
+
+Scoring models are pinned, and each adapter records the weights it loaded in its version
+string. Fast-DetectGPT scores under Qwen2.5-7B, Binoculars under the falcon-7b pair of
+its original publication, and DetectCodeGPT under CodeLlama-7b, which is the base model
+of its reference implementation and the configuration \citet{ji2026exploratory} deploy.
+No commercial detector is included, so the evaluation reproduces from open weights.
+
+Reimplementing DetectCodeGPT surfaced two conflicts between the paper and its released
+code, and we record them because they bear on reproducibility in this literature
+generally. The paper's Algorithm~1 subtracts a mean of normalised perturbed log rank
+terms, which contradicts its own definition of the statistic; and the paper gives a
+Poisson mean of two for newline insertion where the released code inserts exactly one,
+its Poisson draw commented out. We follow the released code, since it is the artifact
+that produced the published numbers, and record the choice in the adapter version
+string.
