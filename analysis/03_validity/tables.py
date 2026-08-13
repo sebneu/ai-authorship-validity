@@ -184,6 +184,29 @@ def main() -> int:
         ["Detector"] + [f"Q{b}" for b in sorted(pivot.columns)], rows,
     )
 
+    # Twelve languages clear the floor; six fit a column. Chosen by positive count so
+    # the table shows the stack the corpus actually contains, and the rest stay in the
+    # replication package rather than being averaged into something uninterpretable.
+    lang_path = VALIDITY / "rq2_language.parquet"
+    if lang_path.exists():
+        language = pd.read_parquet(lang_path)
+        top = (language.groupby("ext").n_pos.max().sort_values(ascending=False)
+               .head(6).index.tolist())
+        lpivot = language.pivot_table(index="detector", columns="ext", values="auroc")
+        rows = [
+            f"{LABELS[k]} & " + " & ".join(fmt(lpivot.loc[k].get(e, np.nan)) for e in top)
+            + r" \\"
+            for k in ALL if k in lpivot.index
+        ]
+        written["t_language.tex"] = table(
+            "Area under the ROC curve by file type, on diffs. Negatives were matched to "
+            "the positives on file type at sampling, so a difference here is the "
+            "detector's.",
+            "tab:language", ["Detector"] + [f"\\texttt{{.{e}}}" for e in top], rows,
+            note=f"{len(language.ext.unique())} file types clear the floor of 100 "
+                 "positives; the six most frequent are shown.",
+        )
+
     apivot = agents.pivot_table(index="detector", columns="agent", values="auroc")
     agent_cols = list(apivot.columns)
     rows = [

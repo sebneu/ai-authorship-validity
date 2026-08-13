@@ -105,6 +105,42 @@ def by_agent(df: pd.DataFrame, bootstrap: int, rng) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def by_language(df: pd.DataFrame, bootstrap: int, rng) -> pd.DataFrame:
+    """AUROC per programming language, on diffs.
+
+    Diffs are the only genre carrying a file extension, and the negatives were drawn
+    language-stratified as well as at random precisely so that this comparison would be
+    possible. Because the two sides were matched on language at sampling time, a
+    residual difference between languages here is a property of the detector rather than
+    of what was collected.
+
+    The floor of 100 positives per language is the same one used for agents. Extensions
+    below it are pooled away rather than shown, since an AUROC over a few dozen texts
+    swings more than the effect being measured.
+    """
+    rows = []
+    diffs = df[df.genre == "diff"]
+    for detector, sub in diffs.groupby("detector"):
+        for ext, grp in sub.groupby("ext"):
+            pos = grp.loc[grp.set == "P", "score"].to_numpy(float)
+            neg = grp.loc[(grp.set == "N1") & (grp.matched == True), "score"].to_numpy(float)  # noqa: E712
+            if len(pos) < 100 or len(neg) < 100:
+                continue
+            ci = boot_ci(pos, neg, bootstrap, rng)
+            rows.append(
+                {
+                    "detector": detector,
+                    "ext": ext,
+                    "n_pos": len(pos),
+                    "n_neg": len(neg),
+                    "auroc": auroc(pos, neg),
+                    "ci_lo": ci[0],
+                    "ci_hi": ci[1],
+                }
+            )
+    return pd.DataFrame(rows)
+
+
 def automation_gap(df: pd.DataFrame) -> pd.DataFrame:
     """False positives on pre-LLM human text against pre-LLM automation.
 
@@ -160,6 +196,18 @@ def main() -> int:
         .round(3)
         .to_string()
     )
+
+    language = by_language(df, args.bootstrap, rng)
+    language.to_parquet(OUT / "rq2_language.parquet", index=False)
+    print("\n=== AUROC by programming language (diffs, matched N1) ===")
+    if len(language):
+        print(
+            language.pivot_table(index="detector", columns="ext", values="auroc")
+            .round(3)
+            .to_string()
+        )
+    else:
+        print("no language cell reaches the floor of 100 positives")
 
     gap = automation_gap(df)
     gap.to_parquet(OUT / "rq2_automation.parquet", index=False)

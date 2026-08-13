@@ -133,7 +133,8 @@ def load() -> pd.DataFrame:
     if not CORPUS.exists():
         raise SystemExit(f"missing {CORPUS}")
     corpus = pd.read_parquet(
-        CORPUS, columns=["source_id", "set", "genre", "agent", "repo", "n_chars", "matched"]
+        CORPUS,
+        columns=["source_id", "set", "genre", "agent", "repo", "ext", "n_chars", "matched"],
     ).reset_index(drop=True)
     files = sorted(SCORES.glob("*.parquet"))
     if not files:

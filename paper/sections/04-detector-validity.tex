@@ -241,6 +241,30 @@ these detectors fail on open-source text because the texts are short. If that we
 whole story, the longest band is where they would recover. It is where one of them is
 furthest below chance.
 
+\subsubsection{Does the file type matter?}
+\label{sec:validity:rq2:language}
+
+Diffs carry a file extension, and the negatives were drawn language-stratified as well
+as at random so that the comparison would be available. Because both sides were matched
+on file type when sampled, a difference between file types here belongs to the detector
+rather than to what was collected.
+
+\input{generated/t_language}
+
+Table~\ref{tab:language} shows two things worth separating. The three zero-shot rows sit
+below chance in almost every column, so their failure on code is not confined to one
+language. DetectCodeGPT is highest on JSON at \citednum{0.491}, which is the one column
+that is not a programming language, and across all twelve file types it falls as low as
+\citednum{0.305} on Rust.
+
+The lower two rows move much more. The supervised ceiling reaches \citednum{0.762} on
+Markdown against \citednum{0.520} on TypeScript React, and over the full set it spans
+\citednum{0.506} on YAML to \citednum{0.837} on Java. The LLM judge follows the same
+shape, peaking on Markdown at \citednum{0.750}. Where those two do well the file is
+prose or heavily commented; where they do poorly it is configuration or framework
+scaffolding whose form is fixed regardless of who wrote it. What separates the classes
+inside a diff is mostly the writing in it rather than the code.
+
 \subsubsection{Does any of it generalise across agents?}
 \label{sec:validity:rq2:agents}
 
