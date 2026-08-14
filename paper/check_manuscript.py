@@ -39,7 +39,11 @@ YEAR_RANGE = range(1900, 2101)
 
 # Design parameters we chose, as opposed to quantities we measured. These are stated
 # in the prose deliberately and have no place in the generated macros.
-ALLOWED_NUMBERS = {"1000"}
+ALLOWED_NUMBERS = {
+    "1000",
+    # Postal codes in the affiliation block. They are addresses, not measurements.
+    "3100", "1020",
+}
 
 # Filler and assistant-prose tells. The rule is in CLAUDE.md; enforcing it here means a
 # lapse is caught by the build rather than by a reader. "prevalence" is deliberately
