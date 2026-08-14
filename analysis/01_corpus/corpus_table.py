@@ -61,13 +61,13 @@ def main() -> int:
 detection in N1 or N3 is an error by construction.}}
 \label{{tab:corpus}}
 \small
-\begin{{tabular}}{{@{{}}l{"r" * (len(header) - 1)}@{{}}}}
+\begin{{tabular*}}{{\textwidth}}{{@{{\extracolsep{{\fill}}}}l{"r" * (len(header) - 1)}@{{}}}}
 \toprule
 {" & ".join(header)} \\
 \midrule
 {chr(10).join(rows)}
 \bottomrule
-\end{{tabular}}
+\end{{tabular*}}
 
 \vspace{{2pt}}
 {{\footnotesize Empty cells are empty by design: AIDev supplies contemporaneous human

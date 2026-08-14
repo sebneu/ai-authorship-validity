@@ -3,15 +3,15 @@
 \caption{Zero-shot detectors: area under the ROC curve against length-matched pre-ChatGPT text from the same repositories. 0.5 is chance.}
 \label{tab:zeroshot}
 \small
-\begin{tabular}{@{}lrrrrr@{}}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lrrrrr@{}}
 \toprule
 Detector & Commit msg & PR body & Issue & Comment & Diff \\
 \midrule
-Binoculars & 0.471 & 0.467 & 0.454 & 0.413 & 0.459 \\
-Fast-DetectGPT & 0.498 & 0.295 & 0.410 & 0.390 & 0.455 \\
-DetectCodeGPT & --- & --- & --- & --- & 0.418 \\
+Binoculars & 0.471 & 0.467 & 0.454 & \textbf{0.413} & 0.459 \\
+Fast-DetectGPT & 0.498 & \textbf{0.295} & 0.410 & 0.390 & 0.455 \\
+DetectCodeGPT & --- & --- & --- & --- & \textbf{0.418} \\
 \bottomrule
-\end{tabular}
+\end{tabular*}
 
 \vspace{2pt}
 {\footnotesize Values below 0.5 mean the detector ranks pre-ChatGPT human text as more machine-written than agent text.}

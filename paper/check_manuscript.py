@@ -28,7 +28,7 @@ GENERATED = GENERATED_DIR / "corpus_numbers.tex"
 PREAMBLE_MACROS = {"RESULT"}
 
 # Control sequences that belong to LaTeX or loaded packages, not to us.
-LATEX_MACROS = {"RequirePackage"}
+LATEX_MACROS = {"RequirePackage", "LaTeX", "TeX"}
 
 # Digit groups in prose that are almost certainly hand-typed corpus counts. Years,
 # section numbers and small integers are fine; four-plus digits or comma groups are not.

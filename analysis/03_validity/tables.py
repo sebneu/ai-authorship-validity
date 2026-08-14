@@ -72,8 +72,20 @@ def pct(value: float, digits: int = 1) -> str:
     return "---" if not np.isfinite(value) else f"{100 * value:.{digits}f}"
 
 
+def bf(text: str) -> str:
+    """Bold a cell. Used only where the surrounding prose asks the reader to look."""
+    return rf"\textbf{{{text}}}"
+
+
 def table(caption: str, label: str, header: list[str], rows: list[str],
           align: str | None = None, note: str = "") -> str:
+    """A booktabs table stretched to the text block.
+
+    `tabular*` with a rubber \\extracolsep spreads the columns across \\textwidth
+    instead of leaving a ragged right edge, which matters here because most of these
+    tables are five narrow numeric columns and would otherwise sit in the left half of
+    the page while the caption runs the full width.
+    """
     align = align or "l" + "r" * (len(header) - 1)
     body = "\n".join(rows)
     # The blank line is load-bearing: without a paragraph break the note stays in the
@@ -84,26 +96,48 @@ def table(caption: str, label: str, header: list[str], rows: list[str],
 \caption{{{caption}}}
 \label{{{label}}}
 \small
-\begin{{tabular}}{{@{{}}{align}@{{}}}}
+\begin{{tabular*}}{{\textwidth}}{{@{{\extracolsep{{\fill}}}}{align}@{{}}}}
 \toprule
 {" & ".join(header)} \\
 \midrule
 {body}
 \bottomrule
-\end{{tabular}}{tail}
+\end{{tabular*}}{tail}
 \end{{table}}
 """
 
 
-def by_genre(metrics: pd.DataFrame, detectors: list[str], column: str, formatter) -> list[str]:
+def by_genre(metrics: pd.DataFrame, detectors: list[str], column: str, formatter,
+             highlight=None) -> list[str]:
+    """One row per detector, one column per genre.
+
+    `highlight` takes the value and the detector's row of values and returns whether to
+    bold the cell. Bolding is reserved for the number the prose beside the table points
+    at, so that emphasis carries meaning rather than decorating the grid.
+    """
     pivot = metrics.pivot_table(index="detector", columns="genre", values=column)
     rows = []
     for key in detectors:
         if key not in pivot.index:
             continue
-        cells = [formatter(pivot.loc[key].get(g, np.nan)) for g, _ in GENRES]
+        values = pivot.loc[key]
+        cells = []
+        for genre, _ in GENRES:
+            value = values.get(genre, np.nan)
+            text = formatter(value)
+            if highlight is not None and np.isfinite(value) and highlight(value, values):
+                text = bf(text)
+            cells.append(text)
         rows.append(f"{LABELS[key]} & " + " & ".join(cells) + r" \\")
     return rows
+
+
+def is_row_min(value, values) -> bool:
+    return bool(np.isfinite(values.min()) and value == values.min())
+
+
+def is_row_max(value, values) -> bool:
+    return bool(np.isfinite(values.max()) and value == values.max())
 
 
 def main() -> int:
@@ -120,24 +154,28 @@ def main() -> int:
     written["t_zeroshot.tex"] = table(
         "Zero-shot detectors: area under the ROC curve against length-matched "
         "pre-ChatGPT text from the same repositories. 0.5 is chance.",
-        "tab:zeroshot", genre_header, by_genre(metrics, ZERO_SHOT, "auroc_n1", fmt),
+        "tab:zeroshot", genre_header,
+        by_genre(metrics, ZERO_SHOT, "auroc_n1", fmt, is_row_min),
         note="Values below 0.5 mean the detector ranks pre-ChatGPT human text as more "
              "machine-written than agent text.",
     )
     written["t_others.tex"] = table(
         "Keyword scan, formatting rules and LLM judge: area under the ROC curve, "
         "same comparison.",
-        "tab:others", genre_header, by_genre(metrics, OTHERS, "auroc_n1", fmt),
+        "tab:others", genre_header,
+        by_genre(metrics, OTHERS, "auroc_n1", fmt, is_row_max),
     )
     written["t_ceiling.tex"] = table(
         "A classifier trained in domain on the same text, cross-validated in folds "
         "grouped by repository. This is what is available to be found.",
-        "tab:ceiling", genre_header, by_genre(metrics, CEILING, "auroc_n1", fmt),
+        "tab:ceiling", genre_header,
+        by_genre(metrics, CEILING, "auroc_n1", fmt, is_row_max),
     )
     written["t_recall.tex"] = table(
         "Share of agent-authored artifacts recovered (\\%) at the threshold that flags "
         "5\\% of pre-ChatGPT text in the same genre.",
-        "tab:recall", genre_header, by_genre(metrics, ALL, "recall_at_fpr", pct),
+        "tab:recall", genre_header,
+        by_genre(metrics, ALL, "recall_at_fpr", pct, is_row_max),
     )
 
     sa = metrics[metrics.detector == "selfadmission"]
@@ -161,7 +199,12 @@ def main() -> int:
         cells = []
         for genre, _ in GENRES:
             cell = sub[sub.genre == genre]
-            cells.append("---" if cell.empty else pct(cell.fpr_bots.iloc[0]))
+            if cell.empty:
+                cells.append("---")
+            else:
+                value = cell.fpr_bots.iloc[0]
+                text = pct(value)
+                cells.append(bf(text) if np.isfinite(value) and value > 0.5 else text)
         rows.append(f"{LABELS[key]} & " + " & ".join(cells) + r" \\")
     written["t_automation.tex"] = table(
         "False positives on pre-ChatGPT bot output (\\%), at the threshold calibrated to "
@@ -193,11 +236,14 @@ def main() -> int:
         top = (language.groupby("ext").n_pos.max().sort_values(ascending=False)
                .head(6).index.tolist())
         lpivot = language.pivot_table(index="detector", columns="ext", values="auroc")
-        rows = [
-            f"{LABELS[k]} & " + " & ".join(fmt(lpivot.loc[k].get(e, np.nan)) for e in top)
-            + r" \\"
-            for k in ALL if k in lpivot.index
-        ]
+        rows = []
+        for k in ALL:
+            if k not in lpivot.index:
+                continue
+            values = [lpivot.loc[k].get(e, np.nan) for e in top]
+            best = np.nanmax(values) if np.isfinite(values).any() else np.nan
+            cells = [bf(fmt(v)) if np.isfinite(v) and v == best else fmt(v) for v in values]
+            rows.append(f"{LABELS[k]} & " + " & ".join(cells) + r" \\")
         written["t_language.tex"] = table(
             "Area under the ROC curve by file type, on diffs. Negatives were matched to "
             "the positives on file type at sampling, so a difference here is the "
@@ -231,7 +277,8 @@ def main() -> int:
         r = cell.iloc[0]
         shift = r.auroc_n2 - r.auroc_n1
         rows.append(
-            f"{LABELS[key]} & {fmt(r.auroc_n1)} & {fmt(r.auroc_n2)} & {shift:+.3f} \\\\"
+            f"{LABELS[key]} & {fmt(r.auroc_n1)} & {fmt(r.auroc_n2)} & "
+            + bf(f"{shift:+.3f}") + r" \\"
         )
     written["t_temporal.tex"] = table(
         "Pull request bodies scored against two negative sets: text from the same "
@@ -249,7 +296,8 @@ def main() -> int:
         "Youden's $J = s + c - 1$, the denominator of the Rogan--Gladen correction. "
         "The correction divides by this number.",
         "tab:youden", genre_header,
-        by_genre(correction, ALL, "youden_j", lambda v: fmt(v, 3)),
+        by_genre(correction, ALL, "youden_j", lambda v: fmt(v, 3),
+                 highlight=lambda v, _: v <= 0),
         note="A value at or below zero leaves the correction undefined rather than "
              "imprecise.",
     )
@@ -261,7 +309,7 @@ def main() -> int:
         # The per-cent sign must be escaped: unescaped it opens a LaTeX comment and
         # silently swallows the rest of the row, including its line break.
         rows.append(
-            f"{ap * 100:.0f}\\% & {int(counts.get('estimable', 0))} & "
+            f"{ap * 100:.0f}\\% & " + bf(str(int(counts.get('estimable', 0)))) + " & "
             f"{int(counts.get('out of range', 0))} & {int(counts.get('undefined', 0))} \\\\"
         )
     written["t_estimable.tex"] = table(

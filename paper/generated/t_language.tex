@@ -3,19 +3,19 @@
 \caption{Area under the ROC curve by file type, on diffs. Negatives were matched to the positives on file type at sampling, so a difference here is the detector's.}
 \label{tab:language}
 \small
-\begin{tabular}{@{}lrrrrrr@{}}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lrrrrrr@{}}
 \toprule
 Detector & \texttt{.ts} & \texttt{.py} & \texttt{.md} & \texttt{.tsx} & \texttt{.json} & \texttt{.go} \\
 \midrule
-Binoculars & 0.484 & 0.465 & 0.426 & 0.489 & 0.427 & 0.437 \\
-Fast-DetectGPT & 0.489 & 0.425 & 0.427 & 0.471 & 0.389 & 0.513 \\
-DetectCodeGPT & 0.437 & 0.416 & 0.367 & 0.402 & 0.491 & 0.375 \\
-Keyword scan & 0.501 & 0.502 & 0.512 & 0.500 & 0.500 & 0.500 \\
-Formatting rules & 0.516 & 0.520 & 0.591 & 0.542 & 0.530 & 0.529 \\
-LLM judge & 0.616 & 0.614 & 0.750 & 0.572 & 0.607 & 0.627 \\
-Supervised ceiling & 0.531 & 0.543 & 0.762 & 0.520 & 0.576 & 0.600 \\
+Binoculars & 0.484 & 0.465 & 0.426 & \textbf{0.489} & 0.427 & 0.437 \\
+Fast-DetectGPT & 0.489 & 0.425 & 0.427 & 0.471 & 0.389 & \textbf{0.513} \\
+DetectCodeGPT & 0.437 & 0.416 & 0.367 & 0.402 & \textbf{0.491} & 0.375 \\
+Keyword scan & 0.501 & 0.502 & \textbf{0.512} & 0.500 & 0.500 & 0.500 \\
+Formatting rules & 0.516 & 0.520 & \textbf{0.591} & 0.542 & 0.530 & 0.529 \\
+LLM judge & 0.616 & 0.614 & \textbf{0.750} & 0.572 & 0.607 & 0.627 \\
+Supervised ceiling & 0.531 & 0.543 & \textbf{0.762} & 0.520 & 0.576 & 0.600 \\
 \bottomrule
-\end{tabular}
+\end{tabular*}
 
 \vspace{2pt}
 {\footnotesize 12 file types clear the floor of 100 positives; the six most frequent are shown.}

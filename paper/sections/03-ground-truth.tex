@@ -200,11 +200,40 @@ text without author identity cannot serve as an attribution corpus, however larg
 \subsection{Corpus release}
 \label{sec:groundtruth:release}
 
-The frozen corpus is released as a specification of artifact identifiers, selection
-predicates, seeds and per-cell counts, together with the code that rebuilds it, so that
-it can be reconstructed without redistributing repository content beyond what the
-licences allow. Every count reported in this paper is written into the manuscript source
-by the analysis scripts, so no figure in the text can drift from the data behind it.
+The corpus is released as a \emph{specification} rather than as a copy of the text.
+Redistributing repository content would exceed what the licences of several thousand
+projects allow, and a static copy would also hide the thing most worth inspecting, which
+is how each cell was selected. What we publish is therefore the recipe and the machinery
+to run it:
+
+\begin{itemize}
+  \item the artifact identifiers of every text in each cell, with its set, genre and
+    matching status, so that any row in any table can be traced to the artifact behind
+    it;
+  \item the selection predicates and random seeds for each of the four sets, including
+    the UTC cutoff comparison, the bot-account list and the exclusion patterns for
+    generated and vendored files;
+  \item the per-cell counts of Table~\ref{tab:corpus} and the length-matching bins, so a
+    rebuild can be checked against the frozen version cell by cell;
+  \item the detector harness with each adapter's pinned model weights and revision, and
+    the score files those runs produced;
+  \item the provenance vocabulary, the RDF graph and the competency queries of
+    Section~\ref{sec:provenance}.
+\end{itemize}
+
+Code and specification are at
+\url{https://github.com/sebneu/ai-authorship-validity}, and an archived release with a
+persistent identifier is deposited at \RESULT{Zenodo DOI}. The AIDev dataset
+\citep{li2025aidev} is not redistributed; we pin the exact revision used, since the
+dataset is live and has roughly doubled since its own publication, and a count taken
+from a later revision would not reproduce ours.
+
+One property of the build is worth stating because it is unusual and cheap to adopt.
+Every number in this manuscript is written into the \LaTeX{} source by the analysis
+scripts as a macro, and a consistency check fails the build if the text contains a
+hand-typed figure where a generated one belongs. A stale number cannot survive a re-run
+quietly, which is a small guarantee but the appropriate one for a paper about
+measurements that were never checked.
 
 \subsection{The detector harness}
 \label{sec:groundtruth:harness}

@@ -25,6 +25,29 @@ and the last is a classifier we train ourselves as a reference point.
 Figure~\ref{fig:auroc} places all of them on one axis. The rest of this section takes
 the result apart one question at a time.
 
+\paragraph{One artifact, followed through.} Tables accumulate quickly here, so we carry
+a single example alongside them. It is a commit message of \ExChars{} characters from
+the pre-ChatGPT set:
+
+\begin{quote}
+\ttfamily \ExText{}
+\end{quote}
+
+\noindent
+It was written before ChatGPT was released, in a repository that later received agent
+contributions. We withhold the project and the author, because this paper makes no claim
+about any individual contributor and an example that identified one would break that.
+
+Read it as a practitioner would. It uses the conventional-commit prefix, it is a
+complete and grammatical clause, it names the component, and it says what changed
+without saying how. These are the properties maintainers describe when they say a
+contribution ``looks AI-written''. The message predates the models by years.
+
+Of the \ExInstruments{} instruments, \ExFlagged{} flag it: \ExFlaggedNames{}. Every one
+of those detections is an error, and we know it from the calendar. The example returns in
+Sections~\ref{sec:validity:rq1:published}, \ref{sec:correction:youden}
+and~\ref{sec:provenance:demo}.
+
 \begin{figure}[t]
 \centering
 \includegraphics[width=\linewidth]{figures/f_auroc}
@@ -166,6 +189,12 @@ Fast-DetectGPT at \citednum{1.18} behaves in the opposite way, flagging between
 most \citednum{12.0}~per cent, and on pull request bodies \citednum{0.8}~per cent
 against a false positive rate of \citednum{8.2}. Youden's $J$ is at or below zero in
 nine of the ten cells in this table.
+
+Our example sits inside that first number. Binoculars scores it \ExBinocularsScore{},
+which clears both its calibrated threshold of \ExBinocularsThreshold{} and the published
+\citednum{-1.00}. A study applying the published point to a corpus of commit messages
+counts this 2019 message as AI-written, and counts roughly half the messages beside it
+the same way.
 
 The two failures have the same cause. A threshold is a property of a score distribution,
 and the distribution moves with the domain, the genre and the scoring model. The
@@ -359,6 +388,31 @@ sensitivity and specificity. Its denominator is Youden's $J = s + c - 1$, and th
 correction divides by it.
 
 \input{generated/t_youden}
+
+\paragraph{The arithmetic, once, in full.} Suppose a study reports that
+\WorkedAp{}~per cent of the commit messages in its sample were flagged as AI-written by
+\WorkedDetector{}, which is within the range this literature reports. Our measurements
+for that cell are a sensitivity of $s = \WorkedSe{}$~per cent and a specificity of
+$c = \WorkedSp{}$~per cent. Substituting into Equation~\eqref{eq:rogan-gladen}:
+%
+\begin{equation*}
+  p_{\text{true}}
+  = \frac{p_{\text{obs}} + c - 1}{s + c - 1}
+  = \frac{0.\WorkedAp{} + 0.950 - 1}{0.024 + 0.950 - 1}
+  = \frac{\WorkedNumerator{}}{\WorkedJ{}}
+  = \WorkedQuotient{}.
+\end{equation*}
+%
+The numerator is positive and the denominator is negative, so the corrected prevalence
+is \WorkedQuotient{}: a negative share of artifacts. Nothing has gone wrong in the
+arithmetic. The result says the model has no solution in the unit interval, because an
+instrument that flags pre-ChatGPT text more readily than agent text cannot produce
+\WorkedAp{}~per cent flags from any prevalence at all. The observed rate is a property
+of the threshold, not of the population.
+
+This is what the entries in Table~\ref{tab:estimable} labelled undefined and out of
+range mean, and why the correction cannot simply be reported with wide error bars. Our
+example message is one of the flags feeding that \WorkedAp{}~per cent.
 
 Table~\ref{tab:youden} gives $J$ for every instrument and genre. The zero-shot rows are
 negative, which follows from Table~\ref{tab:zeroshot}: a detector below chance has a

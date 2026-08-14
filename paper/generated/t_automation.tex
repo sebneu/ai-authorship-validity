@@ -3,7 +3,7 @@
 \caption{False positives on pre-ChatGPT bot output (\%), at the threshold calibrated to flag 5\% of pre-ChatGPT human text. Both predate language models, so every detection in either is an error.}
 \label{tab:automation}
 \small
-\begin{tabular}{@{}lrrrrr@{}}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lrrrrr@{}}
 \toprule
 Detector & Commit msg & PR body & Issue & Comment & Diff \\
 \midrule
@@ -11,10 +11,10 @@ Binoculars & 16.7 & 1.6 & 0.7 & 12.7 & --- \\
 Fast-DetectGPT & 7.5 & 16.1 & 2.2 & 4.5 & --- \\
 Keyword scan & 0.0 & 0.0 & 0.0 & 0.0 & --- \\
 Formatting rules & 8.6 & 0.3 & 2.1 & 11.3 & --- \\
-LLM judge & 72.3 & 97.5 & 80.6 & 71.3 & --- \\
+LLM judge & \textbf{72.3} & \textbf{97.5} & \textbf{80.6} & \textbf{71.3} & --- \\
 Supervised ceiling & --- & --- & --- & --- & --- \\
 \bottomrule
-\end{tabular}
+\end{tabular*}
 
 \vspace{2pt}
 {\footnotesize Diffs carry no bot stratum, so that column is empty by design.}

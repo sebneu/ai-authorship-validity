@@ -89,6 +89,14 @@ supporting evidence comes from a stratum where $J$ is at or below zero. It retur
 claims that carry no information whatever their score, which is a statement no score
 threshold can express and which the model makes queryable.
 
+The example of Section~\ref{sec:validity} is exactly such a case. It carries no declared
+evidence, because no agent wrote it and nobody claimed one did, and \ExFlagged{} pieces
+of detector evidence, each annotated with the false positive rate of the stratum it came
+from. The first query returns it. A consumer of that graph can see that the only grounds
+for calling the message AI-written are three scores drawn from strata where the
+instruments are known to be wrong at the rates in Table~\ref{tab:published}, without
+re-running anything and without access to the text.
+
 A third question runs in the opposite direction: artifacts an agent is declared to have
 written that no detector flagged. That is the recall gap of the detector stack measured
 against ground truth, and in the sample graph it is largest on diffs and smallest on

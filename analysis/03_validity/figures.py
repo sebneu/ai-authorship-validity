@@ -112,7 +112,10 @@ def automation_figure(automation: pd.DataFrame) -> None:
     ax.set_yticklabels([LABELS[d] for d in pooled.index])
     ax.invert_yaxis()
     ax.set_xlabel("Artifacts flagged (%), averaged over genres")
-    ax.legend(frameon=False, fontsize=7, loc="lower right")
+    # Upper right: the long bar belongs to the LLM judge at the bottom of the axis, so
+    # the lower corner is the one place the legend cannot go without covering data.
+    ax.legend(frameon=False, fontsize=7, loc="upper right")
+    ax.set_xlim(0, max(100 * pooled.fpr_bots.max() * 1.18, 10))
     ax.grid(axis="x", color="0.92", lw=0.6)
     ax.set_axisbelow(True)
 

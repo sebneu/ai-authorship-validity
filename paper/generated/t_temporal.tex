@@ -3,17 +3,17 @@
 \caption{Pull request bodies scored against two negative sets: text from the same repositories written before ChatGPT, and human-written pull requests from the agent era.}
 \label{tab:temporal}
 \small
-\begin{tabular}{@{}lrrr@{}}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lrrr@{}}
 \toprule
 Detector & vs.\ pre-ChatGPT & vs.\ contemporaneous & Shift \\
 \midrule
-Binoculars & 0.467 & 0.510 & +0.043 \\
-Fast-DetectGPT & 0.295 & 0.460 & +0.165 \\
-Keyword scan & 0.518 & 0.516 & -0.002 \\
-Formatting rules & 0.711 & 0.657 & -0.054 \\
-LLM judge & 0.939 & 0.829 & -0.110 \\
+Binoculars & 0.467 & 0.510 & \textbf{+0.043} \\
+Fast-DetectGPT & 0.295 & 0.460 & \textbf{+0.165} \\
+Keyword scan & 0.518 & 0.516 & \textbf{-0.002} \\
+Formatting rules & 0.711 & 0.657 & \textbf{-0.054} \\
+LLM judge & 0.939 & 0.829 & \textbf{-0.110} \\
 \bottomrule
-\end{tabular}
+\end{tabular*}
 
 \vspace{2pt}
 {\footnotesize The supervised ceiling is absent: it is fit against the matched pre-ChatGPT negatives and never scores the contemporaneous set.}

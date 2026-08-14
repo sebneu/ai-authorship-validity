@@ -114,10 +114,16 @@ def write_table(out: pd.DataFrame) -> None:
         sub = out[out.detector == detector]
         if sub.empty:
             continue
+        worst = sub.fpr_prellm.max()
         cells = []
         for genre, _ in GENRES:
             cell = sub[sub.genre == genre]
-            cells.append("---" if cell.empty else f"{100 * cell.fpr_prellm.iloc[0]:.1f}")
+            if cell.empty:
+                cells.append("---")
+                continue
+            value = cell.fpr_prellm.iloc[0]
+            text = f"{100 * value:.1f}"
+            cells.append(rf"\textbf{{{text}}}" if value == worst else text)
         thr = PUBLISHED[detector]
         body.append(f"{label} ({thr:+.2f}) & " + " & ".join(cells) + r" \\")
 
@@ -130,13 +136,13 @@ the software-engineering domain by \citet{{ji2026exploratory}}. Every one of the
 false positive.}}
 \label{{tab:published}}
 \small
-\begin{{tabular}}{{@{{}}l{"r" * len(GENRES)}@{{}}}}
+\begin{{tabular*}}{{\textwidth}}{{@{{\extracolsep{{\fill}}}}l{"r" * len(GENRES)}@{{}}}}
 \toprule
 {" & ".join(header)} \\
 \midrule
 {chr(10).join(body)}
 \bottomrule
-\end{{tabular}}
+\end{{tabular*}}
 
 \vspace{{2pt}}
 {{\footnotesize Thresholds are applied on the publishing paper's own scale; see

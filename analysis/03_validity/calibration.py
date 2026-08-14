@@ -119,7 +119,12 @@ def main() -> int:
         cells = []
         for genre, _ in GENRES:
             cell = sub[sub.genre == genre]
-            cells.append("---" if cell.empty else f"{cell.ece.iloc[0]:.3f}")
+            if cell.empty:
+                cells.append("---")
+            else:
+                value = cell.ece.iloc[0]
+                text = f"{value:.3f}"
+                cells.append(rf"\textbf{{{text}}}" if value > 0.1 else text)
         body.append(f"{label} & " + " & ".join(cells) + r" \\")
     header = ["Instrument"] + [lbl for _, lbl in GENRES]
 
@@ -130,13 +135,13 @@ def main() -> int:
 Zero would mean a score of 0.8 is right eight times in ten.}}
 \label{{tab:calibration}}
 \small
-\begin{{tabular}}{{@{{}}l{"r" * len(GENRES)}@{{}}}}
+\begin{{tabular*}}{{\textwidth}}{{@{{\extracolsep{{\fill}}}}l{"r" * len(GENRES)}@{{}}}}
 \toprule
 {" & ".join(header)} \\
 \midrule
 {chr(10).join(body)}
 \bottomrule
-\end{{tabular}}
+\end{{tabular*}}
 
 \vspace{{2pt}}
 {{\footnotesize The other five instruments return unbounded statistics, rule counts or a

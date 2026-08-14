@@ -5,14 +5,14 @@ the software-engineering domain by \citet{ji2026exploratory}. Every one of these
 false positive.}
 \label{tab:published}
 \small
-\begin{tabular}{@{}lrrrrr@{}}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lrrrrr@{}}
 \toprule
 Detector (threshold) & Commit msg & PR body & Issue & Comment & Diff \\
 \midrule
-Binoculars (-1.00) & 51.4 & 91.9 & 92.7 & 76.2 & 98.9 \\
-Fast-DetectGPT (+1.18) & 2.1 & 8.2 & 4.2 & 3.5 & 13.1 \\
+Binoculars (-1.00) & 51.4 & 91.9 & 92.7 & 76.2 & \textbf{98.9} \\
+Fast-DetectGPT (+1.18) & 2.1 & 8.2 & 4.2 & 3.5 & \textbf{13.1} \\
 \bottomrule
-\end{tabular}
+\end{tabular*}
 
 \vspace{2pt}
 {\footnotesize Thresholds are applied on the publishing paper's own scale; see

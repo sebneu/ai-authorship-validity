@@ -4,14 +4,14 @@
 Zero would mean a score of 0.8 is right eight times in ten.}
 \label{tab:calibration}
 \small
-\begin{tabular}{@{}lrrrrr@{}}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lrrrrr@{}}
 \toprule
 Instrument & Commit msg & PR body & Issue & Comment & Diff \\
 \midrule
-LLM judge & 0.406 & 0.064 & 0.420 & 0.379 & 0.326 \\
+LLM judge & \textbf{0.406} & 0.064 & \textbf{0.420} & \textbf{0.379} & \textbf{0.326} \\
 Supervised ceiling & 0.027 & 0.008 & 0.037 & 0.018 & 0.041 \\
 \bottomrule
-\end{tabular}
+\end{tabular*}
 
 \vspace{2pt}
 {\footnotesize The other five instruments return unbounded statistics, rule counts or a
