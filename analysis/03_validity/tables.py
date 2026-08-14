@@ -344,6 +344,25 @@ def macros(metrics: pd.DataFrame, automation: pd.DataFrame,
                 macro(f"{prefix}ShortAuroc", fmt(sub[sub.bin == sub.bin.min()].auroc.mean())),
                 macro(f"{prefix}LongAuroc", fmt(sub[sub.bin == sub.bin.max()].auroc.mean())),
             ]
+    # Figures from the published operating points, quoted in the abstract and intro.
+    published = VALIDITY / "rq1_published_points.parquet"
+    if published.exists():
+        pub = pd.read_parquet(published)
+        bino = pub[pub.detector == "binoculars"]
+        fast = pub[pub.detector == "fast_detect_gpt"]
+        if len(bino):
+            diff = bino[bino.genre == "diff"]
+            lines += [
+                macro("PublishedBinoDiffFpr", pct(diff.fpr_prellm.iloc[0]) if len(diff) else "---"),
+                macro("PublishedBinoMinFpr", pct(bino.fpr_prellm.min())),
+                macro("PublishedBinoMaxFpr", pct(bino.fpr_prellm.max())),
+            ]
+        if len(fast):
+            lines += [
+                macro("PublishedFastMinFpr", pct(fast.fpr_prellm.min())),
+                macro("PublishedFastMaxFpr", pct(fast.fpr_prellm.max())),
+            ]
+
     ceil_pr = correction[(correction.detector == "fingerprint") & (correction.genre == "pr_body")]
     if len(ceil_pr) and ceil_pr.iloc[0]["ap20_status"] == "estimable":
         r = ceil_pr.iloc[0]

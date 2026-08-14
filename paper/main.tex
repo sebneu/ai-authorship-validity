@@ -60,40 +60,32 @@
 
 \begin{abstract}
 \textbf{Context.} Recent empirical work estimates how much of open-source software is
-written by AI, and further studies build on those estimates to argue about maintainer
-burden, contribution quality and project sustainability. The estimates rest on three
-kinds of instrument: zero-shot statistical detectors, heuristic phrase and formatting
-filters, and language models used as classifiers.
-\textbf{Objective.} None of these has been validated against ground truth on
-open-source artifacts. They were benchmarked on news articles, student essays and
-curated code benchmarks rather than on commit messages, pull request descriptions,
-issue reports or repository diffs. We ask what these instruments measure when applied
-to open-source text, and what follows for the estimates already published.
-\textbf{Method.} We build ground truth without human annotation. Agent-attributed
-contributions from the AIDev dataset and \texttt{Co-authored-by} trailers give a
-positive set of \PositiveTexts{} texts across five artifact genres. Artifacts written
-in the same repositories before the public release of ChatGPT give a negative set in
-which any detection is an error by construction. We evaluate seven detection
-approaches, stratified by agent, artifact genre and text length, and propagate the
-measured error rates through the Rogan--Gladen correction.
-\textbf{Results.} The zero-shot detectors do not separate the classes. Across all
-\ZeroShotCells{} combinations of detector and genre they score between
-\ZeroShotAurocMin{} and \ZeroShotAurocMax{}, every one below chance, meaning they rank
-pre-ChatGPT human text as more machine-written than text an agent wrote. A supervised
-classifier trained in domain on the same text reaches \CeilingAurocMax{} on pull request
-bodies, so the signal is present and the instruments are missing it. An instructed
+written by AI, and further studies build on those estimates. They rest on zero-shot
+statistical detectors, keyword scans and language models used as classifiers.
+\textbf{Objective.} None has been validated against ground truth on open-source
+artifacts: all were benchmarked on news articles, essays and curated code. We ask what
+they measure on open-source text, and what follows for the published estimates.
+\textbf{Method.} We build ground truth without human annotation: agent-attributed
+contributions from AIDev give a positive set of \PositiveTexts{} texts across five
+artifact genres, and artifacts written in the same repositories before ChatGPT's release
+give a negative set in which any detection is an error by construction. Seven approaches
+are evaluated and the measured error rates propagated through the Rogan--Gladen
+correction.
+\textbf{Results.} At the operating point published for this domain, Binoculars flags
+\PublishedBinoDiffFpr{} per cent of pre-ChatGPT code diffs as AI-written, and between
+\PublishedBinoMinFpr{} and \PublishedBinoMaxFpr{} per cent across genres. Recalibrated
+to a five per cent false positive rate, the zero-shot detectors score between
+\ZeroShotAurocMin{} and \ZeroShotAurocMax{}, every cell below chance; measured against
+contemporaneous human text some of that recovers, but none rises above chance. A
+supervised classifier given the same input reaches \CeilingAurocMax{} on pull request
+bodies, so the signal is present and the deployed instruments miss it. An instructed
 language model flags \JudgeBotFprMin{} to \JudgeBotFprMax{} per cent of pre-ChatGPT bot
-output while held at five per cent on pre-ChatGPT human writing, so it responds to
-automation rather than to language models. The keyword scans used by two of the studies
-never exceed \SelfAdmissionRecallMax{} per cent recall at a false positive rate of
-\SelfAdmissionFprMax{}~per cent.
+output, responding to automation rather than to language models.
 \textbf{Conclusions.} Of \CorrectionCells{} detector and genre combinations,
 \CorrectionUndefined{} give an undefined correction and \CorrectionOutOfRange{} an
-observed rate no prevalence could produce, so most published estimates cannot be
-corrected rather than merely adjusted. Declaration channels are precise and nearly
-silent; content-based detection in this domain is neither. We give a provenance
-vocabulary that keeps an attribution together with the error rate of the stratum it came
-from.
+observed rate no prevalence could produce: most published estimates cannot be corrected
+rather than merely adjusted. We give a provenance vocabulary that records an attribution
+together with the measured error rate of the stratum it came from.
 \keywords{AI-generated code \and Authorship attribution \and Measurement validity \and
 Mining software repositories \and Provenance \and Agentic software engineering}
 \end{abstract}

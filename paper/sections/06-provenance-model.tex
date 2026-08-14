@@ -1,13 +1,20 @@
 \section{Recording attribution and its evidence (RQ4)}
 \label{sec:provenance}
 
-Sections~\ref{sec:validity} and~\ref{sec:correction} measure how far a detector score is
-from an authorship fact. That distance is a property of the score, the genre and the
-threshold, and it is known once measured. The problem is that nothing in current
-practice carries it: a prevalence figure, a dashboard flag or a moderation decision
-records that an artifact was classified as AI-written and discards the grounds. This
-section describes a small vocabulary that keeps the two together, and shows the
-questions that become answerable once it does.
+The preceding sections produced a specific kind of number. The false positive rate of
+Binoculars is not one figure but one per genre and threshold, running from
+\PublishedBinoMinFpr{} to \PublishedBinoMaxFpr{} per cent at the published operating
+point alone (Table~\ref{tab:published}), and Youden's $J$ varies the same way
+(Table~\ref{tab:youden}). A detector score is therefore only interpretable alongside the
+stratum it came from.
+
+Nothing in current practice carries that stratum. A prevalence figure, a dashboard flag
+or a moderation decision records that an artifact was classified as AI-written and
+discards the grounds, so the error rate measured here stops travelling the moment the
+measurement ends. This section describes a small vocabulary that keeps the two together,
+and shows the questions that become answerable once it does. It is the one part of this
+paper that is a design rather than a measurement, and it exists because the measurements
+above are useless to a consumer who cannot see which stratum a claim belongs to.
 
 \subsection{The model}
 \label{sec:provenance:model}
