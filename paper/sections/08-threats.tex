@@ -32,12 +32,23 @@ of detectable history rewriting in the sample. The cross-check against archived 
 streams described in Section~\ref{sec:groundtruth:n1} tests the timestamp rule directly
 rather than assuming it.
 
-\paragraph{Quiescence bias.} Requiring that artifacts were never modified after the
-cutoff selects for those that attracted no later activity. Such artifacts may be
-systematically shorter, less discussed or from less active projects, which could bias
-error-rate estimates in either direction. \RESULT{Report the observable differences
-between eligible and ineligible pre-cutoff artifacts on length, project activity and
-genre, so readers can judge the direction of the bias.}
+\paragraph{Quiescence bias.} Pull request bodies, issue bodies and comments are
+collected through the API, and we keep only those whose last modification also precedes
+the cutoff, since an artifact edited afterwards is not provably free of model output.
+That selects for artifacts which attracted no later activity, and such artifacts may be
+shorter, less discussed or from quieter projects. We did not measure the excluded
+population: doing so would mean collecting artifacts we deliberately exclude, and the
+comparison would still not say how the excluded ones would have been scored.
+
+The design bounds the threat instead. Commit messages and diffs are read from cloned
+repositories rather than the API, and a commit message cannot be edited without
+rewriting history, so no quiescence filter applies to them. If the selection were
+driving the results, the two groups would diverge. They do not: across the zero-shot
+detectors, the five genre cells that cannot be affected span
+\citednum{0.418}--\citednum{0.498}, and the six that can span
+\citednum{0.295}--\citednum{0.467}. Every cell in both groups falls below chance. The
+selection therefore cannot account for the finding, though it may still shift the
+individual rates for the three affected genres.
 
 \paragraph{Repository eligibility.} Only repositories predating the cutoff support
 matched negatives, excluding a substantial minority of the frame
@@ -64,6 +75,18 @@ to whatever generation follows.
 Agents operating under human accounts, and self-hosted or enterprise deployments, are
 absent. Combined with the \AidevTopAgentShare{} share of the largest agent, this makes
 per-agent reporting essential rather than optional.
+
+\paragraph{The linguistic dimension is not measured.} \citet{liang2023biased} found that
+detectors flag writing by non-native English speakers at elevated rates, and open-source
+contribution is a setting where that bias would be both amplified and costly. This study
+does not measure it. A defensible proxy is the obstacle: author-name and author-location
+inference is unreliable and ethically objectionable, and the alternative we considered,
+a language measure taken from a repository's documentation, describes the project rather
+than the person who wrote any given artifact. Our error rates are therefore silent on
+whether they fall evenly across contributors, and the ethical argument in
+Section~\ref{sec:discussion:ethics} rests on the length and automation results rather
+than on a measurement of this dimension. It is the most consequential gap in the study
+and the one most worth closing next.
 
 \paragraph{Repository population.} The curated frame consists of comparatively popular
 repositories, with a median of \RepoStarsMedian{} stars. Detector behaviour on small,

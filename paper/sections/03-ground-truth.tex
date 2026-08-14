@@ -175,13 +175,27 @@ match the positive length distribution within genre by decile, and report unmatc
 results alongside matched ones, since the difference between them estimates the size of
 the length effect.
 
-Stratification variables are programming language, text length, genre, agent and project
-scale. For repositories also covered by the CrOSSD panel \citep{dam2023crossd} we add its
-health and criticality metrics. Following
-\citet{liang2023biased} we need a proxy for contributors' English proficiency.
-Author-name and author-location proxies are unreliable and ethically objectionable, so
-we use repository-level linguistic measures taken from documentation text, which
-describe the project rather than any individual.
+Stratification variables are artifact genre, text length, programming language and
+agent. Results are reported along each of them in Section~\ref{sec:validity}.
+
+Two strata named in the study's design do not appear, and both omissions are
+deliberate. Project scale would need repository identity on both sides of the
+comparison, and while every negative carries one, only a quarter of the positives do,
+because agent pull requests reach us through the dataset rather than through a
+repository crawl. An analysis over that quarter would describe the projects AIDev
+happens to record repository names for. The second is a proxy for contributors' English
+proficiency, which \citet{liang2023biased} give good reason to examine. Author-name and
+author-location proxies are unreliable and ethically objectionable, and the defensible
+alternative, a repository-level measure taken from documentation text, describes a
+project rather than a person. We state the gap in Section~\ref{sec:threats} rather than
+fill it with a proxy that cannot carry the claim.
+
+We also examined the CrOSSD panel \citep{dam2023crossd} as a source, since it tracks
+3{,}255 projects with health and criticality metrics. It stores README text, issue
+bodies and issue comments, but records no author, login or actor field on any of them,
+so it supports no separation of human from agent from bot and no join to AIDev. The
+observation is worth recording for others considering such panels as ground truth: rich
+text without author identity cannot serve as an attribution corpus, however large it is.
 
 \subsection{Corpus release}
 \label{sec:groundtruth:release}
