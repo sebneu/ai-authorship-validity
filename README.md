@@ -1,6 +1,6 @@
 # Who Wrote This? A Validity Audit of AI-Authorship Attribution in Open-Source Software Artifacts
 
-Research repository for a single-author empirical study submitted to *Empirical Software
+Research repository for an empirical study submitted to *Empirical Software
 Engineering* (EMSE), Special Issue "Agentic Software Engineering: The Rise of AI Teammates".
 
 **Author:** Sebastian Neumaier
