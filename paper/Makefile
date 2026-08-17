@@ -9,7 +9,7 @@ LATEXMK := PATH="$(TEXBIN):$$PATH" latexmk
 PYTHON  := ../.venv/bin/python
 NUMBERS := generated/corpus_numbers.tex
 
-.PHONY: all check clean distclean numbers watch
+.PHONY: all check clean distclean numbers watch titlepage submission
 
 all: numbers
 	$(LATEXMK) -pdf -interaction=nonstopmode main.tex
@@ -40,3 +40,15 @@ clean:
 
 distclean: clean
 	rm -f main.pdf
+
+# Editorial Manager wants author identity in a file of its own.
+titlepage:
+	$(LATEXMK) -pdf -interaction=nonstopmode title_page.tex
+	@echo "unfilled fields: $$(grep -c 'TOADD{' title_page.tex)"
+
+# Everything the submission needs, built together.
+submission: all titlepage
+	@echo
+	@echo "upload to Editorial Manager:"
+	@echo "  manuscript  paper/main.pdf"
+	@echo "  title page  paper/title_page.pdf"

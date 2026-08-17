@@ -6,7 +6,8 @@
   "creators": [
     {
       "name": "Neumaier, Sebastian",
-      "affiliation": "University of Applied Sciences St. Pölten, Austria; Vienna University of Economics and Business, Austria"
+      "affiliation": "University of Applied Sciences St. Pölten, Austria; Vienna University of Economics and Business, Austria",
+      "orcid": "0000-0002-9804-4882"
     }
   ],
   "description": "<p>Replication package for a measurement-validity study of the instruments used to estimate how much of open-source software is written by AI.</p><p>It contains the corpus specification for a ground-truth corpus of 86,484 artifacts built without human annotation, drawn from contributions declared to coding agents and from artifacts written in the same repositories before ChatGPT was released; a detector harness with pinned model revisions covering seven detection approaches (Fast-DetectGPT, Binoculars, DetectCodeGPT, a self-admission keyword scan, formatting rules, an instructed language model, and a supervised in-domain reference classifier); the analysis code producing every table and figure in the paper; the Rogan-Gladen prevalence correction; and the <em>aiprov</em> provenance vocabulary with its RDF graph and SPARQL competency queries.</p><p>Repository text is not redistributed and the AIDev dataset is not mirrored; the corpus is released as the specification, selection predicates, seeds and code needed to rebuild it, with the AIDev revision pinned. Code is MIT licensed. The manuscript source, its figures and the provenance vocabulary under <code>paper/</code> and <code>kg/</code> are CC BY 4.0.</p>",
