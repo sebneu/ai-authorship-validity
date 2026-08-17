@@ -1,0 +1,64 @@
+{
+  "upload_type": "software",
+  "title": "Replication package: Who Wrote This? A Validity Audit of AI-Authorship Attribution in Open-Source Software Artifacts",
+  "version": "1.0.0",
+  "language": "eng",
+  "creators": [
+    {
+      "name": "Neumaier, Sebastian",
+      "affiliation": "University of Applied Sciences St. Pölten, Austria; Vienna University of Economics and Business, Austria"
+    }
+  ],
+  "description": "<p>Replication package for a measurement-validity study of the instruments used to estimate how much of open-source software is written by AI.</p><p>It contains the corpus specification for a ground-truth corpus of 86,484 artifacts built without human annotation, drawn from contributions declared to coding agents and from artifacts written in the same repositories before ChatGPT was released; a detector harness with pinned model revisions covering seven detection approaches (Fast-DetectGPT, Binoculars, DetectCodeGPT, a self-admission keyword scan, formatting rules, an instructed language model, and a supervised in-domain reference classifier); the analysis code producing every table and figure in the paper; the Rogan-Gladen prevalence correction; and the <em>aiprov</em> provenance vocabulary with its RDF graph and SPARQL competency queries.</p><p>Repository text is not redistributed and the AIDev dataset is not mirrored; the corpus is released as the specification, selection predicates, seeds and code needed to rebuild it, with the AIDev revision pinned. Code is MIT licensed. The manuscript source, its figures and the provenance vocabulary under <code>paper/</code> and <code>kg/</code> are CC BY 4.0.</p>",
+  "license": "MIT",
+  "access_right": "open",
+  "keywords": [
+    "AI-generated code",
+    "authorship attribution",
+    "measurement validity",
+    "machine-generated text detection",
+    "false positive rate",
+    "prevalence estimation",
+    "Rogan-Gladen correction",
+    "mining software repositories",
+    "coding agents",
+    "provenance",
+    "PROV-O",
+    "open source software",
+    "empirical software engineering",
+    "replication package"
+  ],
+  "subjects": [
+    {
+      "term": "Software engineering",
+      "identifier": "https://linkeddata.ge.imati.cnr.it/resource/EuroSciVoc/software-engineering",
+      "scheme": "url"
+    },
+    {
+      "term": "Artificial intelligence",
+      "identifier": "https://linkeddata.ge.imati.cnr.it/resource/EuroSciVoc/artificial-intelligence",
+      "scheme": "url"
+    }
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/sebneu/ai-authorship-validity",
+      "relation": "isSupplementTo",
+      "resource_type": "software",
+      "scheme": "url"
+    },
+    {
+      "identifier": "10.5281/zenodo.16919272",
+      "relation": "isDerivedFrom",
+      "resource_type": "dataset",
+      "scheme": "doi"
+    },
+    {
+      "identifier": "10.48550/arXiv.2507.15003",
+      "relation": "cites",
+      "resource_type": "publication-preprint",
+      "scheme": "doi"
+    }
+  ],
+  "notes": "Analysis code and harness: MIT. Manuscript text, figures and the aiprov vocabulary: CC BY 4.0. Copyright (c) 2026 Sebastian Neumaier."
+}
