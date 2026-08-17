@@ -1,0 +1,154 @@
+STATEMENT OF NOVELTY — JOURNAL-FIRST SUBMISSION
+
+This manuscript is a journal-first submission. No part of it has appeared before in any
+venue. There is no earlier conference or workshop paper, no extended abstract, no
+registered report and no preprint. The corpus, the measurements, the analysis code and
+the provenance vocabulary are all reported here for the first time, and the manuscript
+is not under consideration elsewhere.
+
+Because the paper is not an extension, everything below is new. What follows describes
+the contributions and, where relevant, what separates them from the closest published
+work by other authors.
+
+1. AN IN-DOMAIN VALIDATION THAT DID NOT PREVIOUSLY EXIST
+
+A body of 2026 work estimates how much of open-source software is written by AI, and a
+further literature builds on those estimates. Every instrument behind them was developed
+and benchmarked outside this domain, on news articles, student essays and curated code
+benchmarks. None had been validated against ground truth on the artifacts it is applied
+to: commit messages, pull request and issue descriptions, review comments and code
+diffs. This manuscript reports that validation.
+
+The 2026 Mining Software Repositories Mining Challenge produced 62 accepted papers built
+on agent-attribution labels within a year. We checked all 62: not one validates those
+labels, and not one evaluates a content-based detector against ground truth. The gap the
+paper closes is therefore documented rather than asserted.
+
+2. GROUND TRUTH WITHOUT HUMAN ANNOTATION
+
+The study needs no annotators, which matters because whether a text "looks AI-written"
+is precisely what is in dispute. Positives are contributions opened by coding agents
+under their own accounts, so authorship is declared by the platform rather than judged.
+Negatives are artifacts written in the same repositories before ChatGPT was released, so
+their composition follows from chronology. Any detection in that set is a false positive
+by construction, and the resulting rate is measured rather than estimated under
+assumptions.
+
+The frozen corpus holds 86,484 texts across five artifact types and four sets: agent
+contributions, pre-ChatGPT artifacts from the same repositories, human contributions
+written during the agent era, and pre-ChatGPT output of dependency bots and release
+automation. The three negative sets have complementary weaknesses by design, and the
+paper reports what each one can and cannot support. Positives and negatives are matched
+on length within artifact type, because length is a confound rather than a signal.
+
+Several construction decisions are contributions in their own right, since they are the
+kind of detail that silently invalidates this sort of corpus. Negatives are filtered on
+the timestamp of the text rather than of its parent artifact, after we found a 2013
+issue carrying an agent-written comment from 2026. Commit messages and diffs are read
+from cloned repository history rather than from the platform API, because API responses
+return current state and an edited body would contaminate a set whose entire purpose is
+being free of model output. Generated and vendored files are excluded from both sides
+using shared code, and trailer lines are stripped from both sides, so that normalisation
+cannot itself become the signal a detector reads.
+
+3. THE COUNTERFACTUAL FALSE POSITIVE MEASUREMENT
+
+Across all 11 combinations of zero-shot detector and artifact type, discrimination falls
+below chance. These instruments rank human text written before ChatGPT existed as more
+machine-written than text an agent actually produced. Below chance is a stronger result
+than poor performance and, to our knowledge, has not been reported for this domain.
+
+4. EVALUATION AT THE OPERATING POINTS THE LITERATURE PUBLISHES
+
+Detector evaluations normally report what an instrument could do if someone tuned it.
+That is not how prevalence studies use them: a published threshold is adopted and
+everything above it is counted. We apply the operating points published for the
+software-engineering domain, unchanged. At its published threshold, Binoculars marks
+98.9 per cent of pre-ChatGPT code diffs as AI-written, 92.7 per cent of issue bodies and
+51.4 per cent of commit messages. Every one of those is a false positive. We are not
+aware of a comparable measurement in the literature.
+
+5. PRE-LANGUAGE-MODEL AUTOMATION SEPARATED FROM HUMAN TEXT
+
+Repositories have contained machine-written text for a decade. Held at a five per cent
+false positive rate on pre-ChatGPT human writing, an instructed language model flags
+between 71.3 and 97.5 per cent of pre-ChatGPT bot output, a factor of 16 to 21. Asked
+whether a text was written by AI, it largely answers whether the text was written by a
+machine of any kind. A prevalence estimate produced that way counts a decade of
+dependency-update messages as AI adoption.
+
+6. A SUPERVISED CEILING UNDER THE SAME INPUT CONSTRAINT
+
+A detector can fail because the signal is absent or because the instrument misses it.
+We separate the two with a classifier trained in domain on text-derived features only,
+cross-validated in folds grouped by repository. It reaches 0.982 on pull request bodies,
+so the signal is present and the deployed instruments are missing it, and only 0.602 on
+code diffs, so the difficulty of code is partly a property of the artifact. The ceiling
+deliberately excludes temporal features, which would separate our classes perfectly for
+the wrong reason, and sees no more than the detectors it bounds.
+
+7. A TEMPORAL CONTROL THAT QUALIFIES OUR OWN HEADLINE
+
+Because the negatives are old, part of the below-chance result could be the era rather
+than authorship. Scored against human pull requests from the agent era instead,
+Fast-DetectGPT recovers from 0.295 to 0.460 and Binoculars reaches chance. We report
+this as a limit on our own finding. What survives it is that neither detector rises
+above chance once the temporal artifact is removed.
+
+8. CALIBRATION
+
+Only two of the seven instruments return a number that could be read as a probability at
+all. The supervised classifier is well calibrated; the instructed language model is not,
+outside a single artifact type. A study reading an unbounded perplexity ratio as a
+confidence is reading something the instrument never offered.
+
+9. A NEGATIVE RESULT ABOUT CORRECTION, WITH THE ARITHMETIC SHOWN
+
+The paper imports the Rogan-Gladen estimator from epidemiology to correct published
+prevalence figures for measured detector error. The outcome is not a set of adjusted
+numbers. Of 31 detector and artifact-type combinations, 8 give a correction whose
+denominator cannot be distinguished from zero, and in 6 more the reported rate implies a
+prevalence above one, meaning no true prevalence between zero and one could have
+produced that many flags through that instrument. Most published estimates therefore
+need remeasuring rather than adjusting. The manuscript works one case through in full so
+that the failure is legible rather than asserted.
+
+10. A PROVENANCE VOCABULARY THAT CARRIES THE ERROR RATE
+
+The measurements produce an error rate per instrument, artifact type and threshold, and
+nothing in current practice carries that information alongside an attribution. We
+contribute aiprov, a small PROV-O extension in which an authorship claim is a
+first-class object with its own evidence, and in which detector evidence records the
+score, the threshold, the detector version and weights, and the measured false positive
+rate, sensitivity and Youden's J of the case it came from. It is populated over the
+corpus and demonstrated with five SPARQL competency questions, including which
+attributions rest on detector evidence alone in a case where the instrument is known to
+be wrong.
+
+11. TWO METHODOLOGICAL BY-PRODUCTS
+
+Reimplementing DetectCodeGPT surfaced two conflicts between its publication and its
+released code, which we document and resolve explicitly; our own first implementation,
+written before the citation was pinned, scored a different statistic and would have
+supported a milder conclusion. We also reproduce the self-admission keyword pipelines of
+two of the audited studies from their described construction, which establishes that
+this family of instrument has near-perfect precision and almost no recall.
+
+12. REPLICATION PACKAGE
+
+The corpus specification, the detector harness with pinned model revisions, all analysis
+code, the vocabulary, the RDF graph and the queries are archived at
+https://doi.org/10.5281/zenodo.21976613 and developed at
+https://github.com/sebneu/ai-authorship-validity. Every number in the manuscript is
+generated by that code, and the manuscript build fails if a figure in the text does not
+come from it.
+
+RELATION TO THE CLOSEST WORK BY OTHER AUTHORS
+
+Khosravani and Mockus (arXiv:2606.24429) audit declaration and metadata channels and
+find under-counting. We audit content-based detection and find over-counting, so the two
+results bound the problem from opposite sides and share no data or authors. Ghaleb
+(MSR 2026, arXiv:2601.17406) trains a classifier to identify which of five agents wrote
+an already agent-labelled pull request; that is a different task, with no
+agent-versus-human decision and no false positive analysis, and we include a variant of
+it as a reference point rather than as a competitor.
