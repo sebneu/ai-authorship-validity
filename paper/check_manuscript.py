@@ -106,6 +106,8 @@ def main() -> int:
             # \citednum marks a figure taken from another paper.
             stripped = re.sub(r"\\RESULT\{[^}]*\}", "", line)
             stripped = re.sub(r"\\citednum\{[^}]*\}", "", stripped)
+            # Digits inside an address are part of the address: DOIs, ports, postcodes.
+            stripped = re.sub(r"\\url\{[^}]*\}", "", stripped)
             for number in SUSPICIOUS_NUMBER.findall(stripped):
                 bare = number.replace(",", "").replace("{", "")
                 if bare in ALLOWED_NUMBERS:
