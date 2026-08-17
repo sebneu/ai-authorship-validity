@@ -22,11 +22,13 @@ ROOT = Path(__file__).resolve().parents[2]
 CORPUS = ROOT / "data" / "processed" / "corpus_v1" / "corpus.parquet"
 OUT = ROOT / "paper" / "generated" / "t_corpus.tex"
 
+# Short labels: the full description belongs in the note, and long row headers push
+# this table past the text block.
 SETS = [
-    ("P", "Agent-attributed (P)"),
-    ("N1", "Pre-ChatGPT, same repos (N1)"),
-    ("N2", "Contemporaneous humans (N2)"),
-    ("N3", "Pre-ChatGPT automation (N3)"),
+    ("P", "P: agent-written"),
+    ("N1", "N1: pre-ChatGPT"),
+    ("N2", "N2: human, agent era"),
+    ("N3", "N3: pre-ChatGPT bots"),
 ]
 GENRES = [
     ("commit_message", "Commit msg"),
@@ -70,8 +72,11 @@ detection in N1 or N3 is an error by construction.}}
 \end{{tabular*}}
 
 \vspace{{2pt}}
-{{\footnotesize Empty cells are empty by design: AIDev supplies contemporaneous human
-pull requests only, and repository automation writes no code diffs.}}
+{{\footnotesize P is written by coding agents under their own accounts. N1 comes from the
+same repositories before ChatGPT was released, N2 from humans writing during the agent
+era, and N3 from dependency bots and release automation before ChatGPT. Empty cells are
+empty by design: AIDev supplies contemporaneous human pull requests only, and repository
+automation writes no code diffs.}}
 \end{{table}}
 """)
     print(f"wrote {OUT} ({grand:,} texts)")

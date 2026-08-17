@@ -76,7 +76,7 @@ carries four claims, and a consumer can ask which of them would survive on its o
 \label{sec:provenance:demo}
 
 The corpus, its detector scores and the stratum error rates of
-Tables~\ref{tab:rq1} and~\ref{tab:rq3} are loaded into a graph over a sample of the
+Tables~\ref{tab:published} and~\ref{tab:youden} are loaded into a graph over a sample of the
 corpus. Five competency questions are answered in SPARQL, and each of them turns on the
 relation between an attribution and its grounds, so none is answerable from a table of
 scores. Two are worth reproducing here.
@@ -100,7 +100,7 @@ re-running anything and without access to the text.
 A third question runs in the opposite direction: artifacts an agent is declared to have
 written that no detector flagged. That is the recall gap of the detector stack measured
 against ground truth, and in the sample graph it is largest on diffs and smallest on
-pull request bodies, which matches Table~\ref{tab:rq1}.
+pull request bodies, which matches Table~\ref{tab:recall}.
 
 The vocabulary, the graph and the queries are in the replication package. The
 contribution is the design and its demonstration rather than the graph itself, which is

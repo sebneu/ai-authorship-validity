@@ -35,7 +35,7 @@ Three properties of the positive set bound every claim in this paper. First, the
 observation window is seven months: all agent-authored pull requests fall between
 \AidevWindowStart{} and \AidevWindowEnd{}, so the results describe the platforms and
 model versions current in the first half of 2025. Second, the agent mix is uneven
-(Table~\ref{tab:agents}). One agent accounts for \AidevTopAgentShare{} of pull requests,
+(Table~\ref{tab:agentmix}). One agent accounts for \AidevTopAgentShare{} of pull requests,
 and median body length differs by about an order of magnitude across agents, so any
 pooled metric mostly describes that agent. We report detector results per agent, and
 give pooled figures only under equal allocation. Third, the texts are short: the median
@@ -43,20 +43,23 @@ pull request body is \AidevBodyMedian{} characters and the median commit message
 \AidevCommitMsgMedian{}. Detectors that separate classes almost perfectly on
 essay-length text are being asked here to decide on a single line of English.
 
-\begin{table}
-\caption{Positive set composition at the pinned AIDev revision}
-\label{tab:agents}
-\begin{tabular}{lrr}
-\hline\noalign{\smallskip}
-Agent & PRs & Median body (chars) \\
-\noalign{\smallskip}\hline\noalign{\smallskip}
+\begin{table}[t]
+\caption{Composition of the positive set at the pinned AIDev revision. One agent
+dominates, and median body length differs by an order of magnitude across agents, which
+is why no metric in this paper is pooled without equal allocation.}
+\label{tab:agentmix}
+\small
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lrr@{}}
+\toprule
+Agent & Pull requests & Median body (chars) \\
+\midrule
 OpenAI Codex & \AgentOpenAICodexPRs{} & \AgentOpenAICodexBodyMedian{} \\
 GitHub Copilot & \AgentCopilotPRs{} & \AgentCopilotBodyMedian{} \\
 Cursor & \AgentCursorPRs{} & \AgentCursorBodyMedian{} \\
 Devin & \AgentDevinPRs{} & \AgentDevinBodyMedian{} \\
 Claude Code & \AgentClaudeCodePRs{} & \AgentClaudeCodeBodyMedian{} \\
-\noalign{\smallskip}\hline
-\end{tabular}
+\bottomrule
+\end{tabular*}
 \end{table}
 
 \subsubsection{Artifact genres}
@@ -65,11 +68,39 @@ Claude Code & \AgentClaudeCodePRs{} & \AgentClaudeCodeBodyMedian{} \\
 We treat five genres separately, because they differ in length and register and because
 published studies score different subsets of them. Pull request descriptions are prose
 of moderate length and often follow a template. Commit messages are the shortest genre
-and the most conventional. Code diffs are scored per file, with the language taken from
-repository metadata. Issue bodies are prose in a different register from pull requests.
-Pull request comments are restricted to human accounts, since \AidevCommentBotShare{} of
-comments on agent-authored pull requests come from bots, and an unfiltered genre would
-measure continuous-integration output instead of agent output.
+and the most conventional. Issue bodies are prose in a different register from pull
+requests. Pull request comments are restricted to human accounts, since
+\AidevCommentBotShare{} of comments on agent-authored pull requests come from bots, and
+an unfiltered genre would measure continuous-integration output instead of agent output.
+
+The fifth genre needs more explanation than the others. A \emph{code diff} here is the
+unified diff of one changed file: the added and removed lines with their surrounding
+context, headed by the usual hunk markers. It is not the file's full contents. We score
+the change rather than the file because attribution attaches to the change; most lines
+of a file were written by somebody else, at some other time, and including them would
+dilute whatever authorship signal the contribution carries. Both sides of the comparison
+are collected in the same format and matched on length, at a median of
+\citednum{877} characters for the positives against \citednum{827} for the negatives, so
+no part of the diff result comes from one class being presented differently from the
+other.
+
+Scoring code at all deserves a justification, because code is not prose. Its grammar is
+fixed, its layout is often decided by a formatter, and its identifiers follow project
+convention, so two developers solving the same problem produce far more similar text
+than two developers describing it. That is a reason to expect detection on code to be
+hard, and it is also why the literature we audit scores code anyway: DetectCodeGPT
+exists for exactly this genre, and \citet{ji2026exploratory} apply it to repository code
+to produce their headline estimate. An instrument in use is an instrument worth
+measuring. Section~\ref{sec:validity:rq1:zeroshot} reports what it does, and
+Section~\ref{sec:validity:ceiling} reports how much there was to find in the first
+place.
+
+One difference from that literature should be stated here rather than in the results.
+\citet{ji2026exploratory} score whole source files; we score diff hunks. A hunk is
+shorter and less self-contained, which is the harder setting for any of these
+statistics, so our diff numbers are not a direct replication of theirs. The choice
+follows from the research question: a prevalence estimate over contributions is an
+estimate over changes.
 
 Trailer lines such as \texttt{Co-authored-by} are removed from commit messages before
 scoring and stored separately. Recovering an explicit declaration is not detection, and

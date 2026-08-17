@@ -17,6 +17,23 @@ instrument recovers once its threshold is set to flag five per cent of pre-ChatG
 The second number matters more in practice, because that is how these instruments are
 used: a threshold is chosen and everything above it is counted.
 
+\paragraph{Why five per cent.} The figure is a budget for errors, not a property of any
+detector, and it is deliberately generous. Binoculars was published with a headline
+operating point of \citednum{0.01} per cent false positives \citep{hans2024binoculars},
+five hundred times stricter than what we grant here. We allow more because the
+alternative is uninformative: at a strict target most of these instruments recover
+almost nothing on this corpus, and a table of zeros says only that the threshold was
+strict.
+
+Five per cent is also close to the error rate a deployment could absorb. In a repository
+where one contribution in twenty is wrongly flagged, the cost is already visible to
+maintainers and contributors. Anything looser stops being a detector and becomes a
+sampling scheme. Reading the tables, then, the false positive rate is held fixed and
+generous, and what varies between cells is what that budget buys.
+Section~\ref{sec:validity:rq1:published} drops the calibration entirely and applies the
+thresholds the literature actually publishes, where the false positive rate is whatever
+it turns out to be.
+
 Seven instruments run. Three are the zero-shot detectors the prevalence literature
 applies, one is the keyword scan two of the audited studies use, one is a set of
 formatting rules of the kind maintainers screen on, one is an instructed language model,
@@ -143,6 +160,18 @@ Two conclusions follow. For four of the five genres, the zero-shot detectors are
 finding a signal that a modest classifier finds with the same input. Diffs are the
 exception: the ceiling there is only \CeilingAurocMin{}, so the difficulty of code is
 partly a property of the artifact rather than of the instruments.
+
+That exception settles a question the diff results would otherwise leave open. Code is
+constrained by grammar, formatter and project convention, so it is regular whoever wrote
+it, and one might expect any likelihood-based detector to call it machine-written for
+that reason alone. The ceiling of \CeilingAurocMin{} confirms the first half of the
+suspicion: there is little authorship signal in a diff hunk to find, far less than in
+any prose genre. What does not follow is that flagging code is therefore harmless. The
+instruments do not return ``little evidence''. At the published threshold Binoculars
+flags \PublishedBinoDiffFpr{}~per cent of pre-ChatGPT diffs
+(Section~\ref{sec:validity:rq1:published}), which is a confident answer to a question
+the artifact cannot support. The gap between how little is knowable and how much is
+reported is the finding, and it is widest exactly here.
 
 \subsubsection{What each instrument recovers in practice}
 \label{sec:validity:rq1:recall}

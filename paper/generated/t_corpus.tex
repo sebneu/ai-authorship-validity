@@ -8,14 +8,17 @@ detection in N1 or N3 is an error by construction.}
 \toprule
 Set & Commit msg & PR body & Issue & Comment & Diff & Total \\
 \midrule
-Agent-attributed (P) & 5,000 & 5,000 & 1,720 & 3,930 & 5,000 & 20,650 \\
-Pre-ChatGPT, same repos (N1) & 10,000 & 10,000 & 6,720 & 8,930 & 9,610 & 45,260 \\
-Contemporaneous humans (N2) & --- & 4,726 & --- & --- & --- & 4,726 \\
-Pre-ChatGPT automation (N3) & 5,000 & 5,000 & 848 & 5,000 & --- & 15,848 \\
+P: agent-written & 5,000 & 5,000 & 1,720 & 3,930 & 5,000 & 20,650 \\
+N1: pre-ChatGPT & 10,000 & 10,000 & 6,720 & 8,930 & 9,610 & 45,260 \\
+N2: human, agent era & --- & 4,726 & --- & --- & --- & 4,726 \\
+N3: pre-ChatGPT bots & 5,000 & 5,000 & 848 & 5,000 & --- & 15,848 \\
 \bottomrule
 \end{tabular*}
 
 \vspace{2pt}
-{\footnotesize Empty cells are empty by design: AIDev supplies contemporaneous human
-pull requests only, and repository automation writes no code diffs.}
+{\footnotesize P is written by coding agents under their own accounts. N1 comes from the
+same repositories before ChatGPT was released, N2 from humans writing during the agent
+era, and N3 from dependency bots and release automation before ChatGPT. Empty cells are
+empty by design: AIDev supplies contemporaneous human pull requests only, and repository
+automation writes no code diffs.}
 \end{table}
