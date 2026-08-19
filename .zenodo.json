@@ -61,5 +61,10 @@
       "scheme": "doi"
     }
   ],
-  "notes": "Analysis code and harness: MIT. Manuscript text, figures and the aiprov vocabulary: CC BY 4.0. Copyright (c) 2026 Sebastian Neumaier."
+  "notes": "Analysis code and harness: MIT. Manuscript text, figures and the aiprov vocabulary: CC BY 4.0. Copyright (c) 2026 Sebastian Neumaier. Funded by the Internet Stiftung through its netidee programme (project CrOSSD2, https://www.netidee.at/crossd2) and by the European Union's Horizon Europe programme under Grant Agreement No. 101189650 (CERTAIN, https://certain-project.eu/). Views and opinions expressed are those of the author only and do not necessarily reflect those of the European Union. Neither the European Union nor the granting authority can be held responsible for them.",
+  "grants": [
+    {
+      "id": "101189650"
+    }
+  ]
 }

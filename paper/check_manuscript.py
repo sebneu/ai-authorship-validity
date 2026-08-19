@@ -43,6 +43,8 @@ ALLOWED_NUMBERS = {
     "1000",
     # Postal codes in the affiliation block. They are addresses, not measurements.
     "3100", "1020",
+    # Horizon Europe grant agreement number in the funding declaration.
+    "101189650",
 }
 
 # Filler and assistant-prose tells. The rule is in CLAUDE.md; enforcing it here means a
