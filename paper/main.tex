@@ -104,9 +104,44 @@ with the error rate of its case.
 \input{sections/08-threats}
 \input{sections/09-conclusion}
 
-% Acknowledgements deferred to the final version.
+% Acknowledgements are deferred to the final version. The journal asks that funding be
+% stated separately from any acknowledgement, so it has its own subsection below.
 
-\section*{Declaration of generative AI use}
+\section*{Declarations}
+
+\subsection*{Funding}
+No funding was received for this work.
+
+\subsection*{Ethical approval}
+Not applicable. The study analyses software artifacts that are already public, and makes
+no claim about any identified or identifiable individual. No human participants were
+involved.
+
+\subsection*{Informed consent}
+Not applicable. The study involves no human participants and collects no personal data.
+
+\subsection*{Author contributions}
+Sebastian Neumaier is the sole author. He was responsible for conceptualisation,
+methodology, software, formal analysis, investigation, data curation, writing of the
+original draft and its revision, and visualisation. He read and approved the final
+manuscript.
+
+\subsection*{Data availability statement}
+\begin{sloppypar}
+All code, the frozen corpus specification, detector configurations with pinned model
+revisions, the provenance vocabulary and the SPARQL competency queries are available at
+\url{https://github.com/sebneu/ai-authorship-validity}, with an archived release at
+\url{https://doi.org/10.5281/zenodo.21976613}. Repository text is not redistributed, and
+neither is the AIDev dataset \citep{li2025aidev}; the corpus is released as the
+specification and the code needed to rebuild it, with the exact AIDev revision pinned so
+that every count reported here can be reproduced.
+Section~\ref{sec:groundtruth:release} describes what the release contains.
+\end{sloppypar}
+
+\subsection*{Conflict of interest}
+The author declares that he has no conflict of interest.
+
+\subsection*{Generative AI use}
 The author used a large language model as an assistant during this work: drafting and
 revising manuscript prose, writing and refactoring the analysis code released with the
 paper, and reconstructing one detector's method from its publication and its released
@@ -115,21 +150,6 @@ all conclusions are the author's own. Every quantity reported here is produced b
 released code rather than written by a model, and a consistency check in the build fails
 if a number in the text does not come from that code. The author has reviewed the whole
 manuscript and the released artifacts and takes full responsibility for them.
-
-\section*{Conflict of interest}
-The author declares that he has no conflict of interest.
-
-\section*{Data availability}
-\begin{sloppypar}
-All code, the frozen corpus specification, detector configurations with pinned model
-revisions, the provenance vocabulary and the SPARQL competency queries are at
-\url{https://github.com/sebneu/ai-authorship-validity}, with an archived release at
-\url{https://doi.org/10.5281/zenodo.21976613}. Repository text is not redistributed, and neither is the AIDev
-dataset \citep{li2025aidev}; the corpus is released as the specification and code needed
-to rebuild it, with the exact AIDev revision pinned so that every count reported here
-can be reproduced. Section~\ref{sec:groundtruth:release} describes what the release
-contains.
-\end{sloppypar}
 
 \bibliographystyle{spbasic}
 \bibliography{refs}
