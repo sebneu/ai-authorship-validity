@@ -33,9 +33,14 @@ from metrics import CORPUS, ROOT, load  # noqa: E402
 
 TEX = ROOT / "paper" / "generated" / "example_numbers.tex"
 
-# Pinned by text. Chosen because it is flagged by several instruments at once, is short
-# enough to quote in full, names no project or person, and reads like what practitioners
+# Pinned by identifier rather than by text, so that the example regenerates from the
+# released bundle, whose corpus metadata carries no text column. The text is repeated
+# here because the paper quotes it; when the full corpus is present the two are checked
+# against each other, and a mismatch stops the run rather than quietly renaming the
+# example. Chosen because several instruments flag it at once, it is short enough to
+# quote in full, it names no project or person, and it reads like what practitioners
 # describe as machine-written prose -- which is the point, since it predates the models.
+EXAMPLE_SOURCE_ID = "f2748aea82145a603c7a0a7b9d5fca1955982d9b"
 EXAMPLE_TEXT = "fix: improve error handling in WebSockets"
 EXAMPLE_GENRE = "commit_message"
 
@@ -60,14 +65,21 @@ def macro(name: str, value: str) -> str:
 
 
 def main() -> int:
-    corpus = pd.read_parquet(CORPUS, columns=["source_id", "set", "genre", "text", "n_chars"])
+    corpus = pd.read_parquet(CORPUS)
     match = corpus[
-        (corpus.text == EXAMPLE_TEXT) & (corpus.genre == EXAMPLE_GENRE) & (corpus.set == "N1")
+        (corpus.source_id == EXAMPLE_SOURCE_ID)
+        & (corpus.genre == EXAMPLE_GENRE)
+        & (corpus.set == "N1")
     ]
     if match.empty:
         raise SystemExit(
-            f"example artifact not found in the corpus: {EXAMPLE_TEXT!r}. "
-            "It was pinned by text; if the corpus was rebuilt, pick a new one."
+            f"example artifact {EXAMPLE_SOURCE_ID} is not in the corpus. If the corpus "
+            "was rebuilt, pick a new example and update EXAMPLE_SOURCE_ID."
+        )
+    if "text" in corpus.columns and match.text.iloc[0] != EXAMPLE_TEXT:
+        raise SystemExit(
+            f"example {EXAMPLE_SOURCE_ID} no longer holds the quoted text. The paper "
+            "quotes EXAMPLE_TEXT verbatim, so the two must agree."
         )
     source_id = match.source_id.iloc[0]
 
