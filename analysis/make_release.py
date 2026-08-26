@@ -23,6 +23,7 @@ import argparse
 import hashlib
 import json
 import tarfile
+import tempfile
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -45,10 +46,29 @@ INCLUDE = [
 
 # Named so the exclusion is a decision on the record rather than an omission.
 EXCLUDE_REASON = {
-    "corpus_v1/corpus.parquet": "contains repository text; released as specification instead",
+    "corpus_v1/corpus.parquet": "contains repository text; the same rows without the "
+                                "text column are included as corpus_metadata.parquet",
     "corpus_v1/n1_*.parquet": "contains repository text",
     "llm_judge_cache/": "redundant with llm_judge.parquet, and 323 MB of tiny files",
 }
+
+
+def corpus_metadata(tmp: Path) -> Path:
+    """The corpus with the text column dropped.
+
+    Without this the bundle is not self-sufficient: a score file is a list of
+    identifiers and numbers, and nothing in it says which set or genre a row belongs to,
+    so none of the tables could be recomputed. The metadata carries the labels and
+    strata and no artifact text, which is exactly the line the release draws.
+    """
+    import pandas as pd
+
+    frame = pd.read_parquet(PROCESSED / "corpus_v1" / "corpus.parquet")
+    if "text" not in frame.columns:
+        raise SystemExit("corpus has no text column; refusing to guess what to drop")
+    out = tmp / "corpus_metadata.parquet"
+    frame.drop(columns=["text"]).to_parquet(out, index=False)
+    return out
 
 
 def digest(path: Path) -> str:
@@ -65,7 +85,8 @@ def main() -> int:
     args = ap.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
 
-    files: list[tuple[str, Path]] = []
+    tmp = Path(tempfile.mkdtemp())
+    files: list[tuple[str, Path]] = [("corpus_metadata.parquet", corpus_metadata(tmp))]
     for name, source in INCLUDE:
         if not source.exists():
             print(f"  missing, skipped: {source.relative_to(ROOT)}")

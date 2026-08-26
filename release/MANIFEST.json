@@ -1,12 +1,17 @@
 {
-  "generated": "2026-08-26T11:14:56.721451+00:00",
+  "generated": "2026-08-26T11:16:46.510082+00:00",
   "note": "Scoring artifacts for the AI-authorship validity audit. No artifact text is included; see excluded for what is deliberately absent.",
   "excluded": {
-    "corpus_v1/corpus.parquet": "contains repository text; released as specification instead",
+    "corpus_v1/corpus.parquet": "contains repository text; the same rows without the text column are included as corpus_metadata.parquet",
     "corpus_v1/n1_*.parquet": "contains repository text",
     "llm_judge_cache/": "redundant with llm_judge.parquet, and 323 MB of tiny files"
   },
   "files": [
+    {
+      "path": "corpus_metadata.parquet",
+      "bytes": 2636117,
+      "sha256": "59f262f513e0bda90cbbc41e76361ea4cad4ef915144934f8b86e898babc91e3"
+    },
     {
       "path": "scores/binoculars.parquet",
       "bytes": 2850527,
@@ -128,5 +133,5 @@
       "sha256": "7074c4162ed0e8655a2d3e4e24333d944227448832a2e114172b0429f45c2e82"
     }
   ],
-  "total_bytes": 18840077
+  "total_bytes": 21476194
 }
