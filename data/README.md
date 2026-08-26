@@ -40,6 +40,26 @@ this file and never existed:
 | `processed/llm_judge_cache/` | `analysis/02_detectors/llm_judge.py` | Cached judge responses keyed by model, prompt revision and text hash, so re-runs cost nothing |
 | `processed/aidev_profile.json`, `repo_ages.parquet` | `profile_aidev.py`, `verify_repo_ages.py` | Dataset profile behind the corpus-description macros; per-repository creation dates behind the N1 frame |
 
+## Preservation
+
+The scoring runs are the one part of this project that cannot be regenerated cheaply:
+about fourteen hours of H100 time, on a host that was decommissioned on 2026-08-14.
+Before deletion, every file that host held was checksummed against the local copy and
+matched byte for byte, and the two helper scripts that existed only there were retrieved
+into `analysis/02_detectors/host/`.
+
+`python analysis/make_release.py` bundles the artifacts that must outlive any single
+machine into `release/scoring-artifacts-v1.tar.gz` with a SHA-256 manifest: the seven
+score files, the superseded DetectCodeGPT scores, the RQ1 to RQ3 outputs, the RDF graph,
+and the corpus and download manifests. Roughly 14 MB compressed. It is deposited
+alongside the code so that every table in the paper can be reproduced without a GPU and
+without the artifact text.
+
+The bundle deliberately excludes `corpus_v1/corpus.parquet` and the `n1_*` files, which
+carry repository text that we cannot redistribute, and the LLM-judge cache, which is
+redundant with `llm_judge.parquet`. The exclusions and their reasons are recorded inside
+the bundle's own manifest rather than only here.
+
 ## Versioning
 
 The frozen corpus is tagged `corpus-v1` at the commit that froze it. Its checksum

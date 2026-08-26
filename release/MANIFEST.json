@@ -1,0 +1,132 @@
+{
+  "generated": "2026-08-26T11:14:56.721451+00:00",
+  "note": "Scoring artifacts for the AI-authorship validity audit. No artifact text is included; see excluded for what is deliberately absent.",
+  "excluded": {
+    "corpus_v1/corpus.parquet": "contains repository text; released as specification instead",
+    "corpus_v1/n1_*.parquet": "contains repository text",
+    "llm_judge_cache/": "redundant with llm_judge.parquet, and 323 MB of tiny files"
+  },
+  "files": [
+    {
+      "path": "scores/binoculars.parquet",
+      "bytes": 2850527,
+      "sha256": "6ebfc2a2a0f82a412e99d852791bf41eb0d40f233d0e5832086e8026407bbccb"
+    },
+    {
+      "path": "scores/detect_code_gpt.parquet",
+      "bytes": 1013690,
+      "sha256": "cfc15f090a1a3ec160a259ffb3ad63ac930fe6cee83a68c7b9b7390608eede52"
+    },
+    {
+      "path": "scores/fast_detect_gpt.parquet",
+      "bytes": 2877367,
+      "sha256": "752177b7debf34d10f0051ebdc6ce515525c1a821d44456b8b5d5c2e87428bc1"
+    },
+    {
+      "path": "scores/fingerprint.parquet",
+      "bytes": 2578127,
+      "sha256": "8edec5da6d1c5abce785ae80188923d122708dae0a6ac7306eb00c29da3ef1ff"
+    },
+    {
+      "path": "scores/fingerprint_manifest.json",
+      "bytes": 661,
+      "sha256": "7fcf73726eb1fd34bd45312fe0465f1d3d9d83b5e5e328f61de7c6d2d42389ef"
+    },
+    {
+      "path": "scores/heuristics.parquet",
+      "bytes": 2226410,
+      "sha256": "8e1b8bf23a08e4d6d5db0cf6e787fe73653479ba0c0d628847167f59dffec582"
+    },
+    {
+      "path": "scores/llm_judge.parquet",
+      "bytes": 2226376,
+      "sha256": "f0cb0c5ad9ed281ceb1223074d21a2646c93bfb5d5b695f5aeadf7b14adfb791"
+    },
+    {
+      "path": "scores/run_manifest.json",
+      "bytes": 2869,
+      "sha256": "512e2d8274ac2a2f4f853f46225ffa731523e1bd76990fa0656460b5678e850c"
+    },
+    {
+      "path": "scores/selfadmission.parquet",
+      "bytes": 2199964,
+      "sha256": "e56452dc3f155a835e7b7eac0655b2f05d6a8497ea4cf18a273b57de7c5e2ff8"
+    },
+    {
+      "path": "scores_superseded/detect_code_gpt.loglik.parquet",
+      "bytes": 1017514,
+      "sha256": "7ba958287fb2b10910afa27c410ad3a919df08729460d853dae1a0039718c6a1"
+    },
+    {
+      "path": "validity/rq1_calibration.parquet",
+      "bytes": 4195,
+      "sha256": "71589223c3473f288ba0f71d6525e76f5e505bb66e44dba610e8823662915595"
+    },
+    {
+      "path": "validity/rq1_manifest.json",
+      "bytes": 256,
+      "sha256": "1c06575e527f41a6831672bfbb45a328fe66a5ddf641c7aa990e0d34103a6e63"
+    },
+    {
+      "path": "validity/rq1_metrics.parquet",
+      "bytes": 11924,
+      "sha256": "0cca6a45e678326df3a2d7c581e5db0d3718b3711580746aa378e37dcfbb7d62"
+    },
+    {
+      "path": "validity/rq1_published_points.parquet",
+      "bytes": 4987,
+      "sha256": "8db93c7cc3a0b8ef41d8ec9ef053f5c47c92e27e89610be0a2dc1f9aa9d4f6c2"
+    },
+    {
+      "path": "validity/rq2_agent.parquet",
+      "bytes": 8390,
+      "sha256": "023a1b01a389af70497a0381febcd44a29bcef1393b92c1145280e882a15e0d3"
+    },
+    {
+      "path": "validity/rq2_automation.parquet",
+      "bytes": 5264,
+      "sha256": "896309ade7cbe2149a1409d306a9fda5e969e9264989105dc73d858615002eb9"
+    },
+    {
+      "path": "validity/rq2_language.parquet",
+      "bytes": 6768,
+      "sha256": "7ffc48bb34ccc04fc4dff91075db7d6aa148885ee429e660286c0f64fe1bc4fc"
+    },
+    {
+      "path": "validity/rq2_length.parquet",
+      "bytes": 10382,
+      "sha256": "8c86924585f8ee2dd8a058979a4b26c0970a0ea0d7f155df9000e0dc831329d8"
+    },
+    {
+      "path": "correction/rq3_correction.parquet",
+      "bytes": 25948,
+      "sha256": "6414321e8f819bde44dc59e4ca3d482bd72c4be185b1847b05b92cca81d1a7bd"
+    },
+    {
+      "path": "kg/aiprov_corpus.ttl",
+      "bytes": 1736914,
+      "sha256": "49707f676259d9773aefe37a119ec72a6dfd443c42dc28790ff1ec8f804d7721"
+    },
+    {
+      "path": "corpus_manifest.json",
+      "bytes": 25113,
+      "sha256": "1318cefcdb7a1ff127c6275c08277c82b3fa765a08afb1c9fd015b1e4f861b2e"
+    },
+    {
+      "path": "aidev_profile.json",
+      "bytes": 3677,
+      "sha256": "0800da851de88f9d87215c24d9494974e1cb1c35ba376e3f6a27aef44cf1ae69"
+    },
+    {
+      "path": "crossd_probe.json",
+      "bytes": 2274,
+      "sha256": "ddea423a823dca03397a91e91ec856f433b8d1235c749aa8531b5f5c786941b9"
+    },
+    {
+      "path": "aidev_download_manifest.json",
+      "bytes": 480,
+      "sha256": "7074c4162ed0e8655a2d3e4e24333d944227448832a2e114172b0429f45c2e82"
+    }
+  ],
+  "total_bytes": 18840077
+}

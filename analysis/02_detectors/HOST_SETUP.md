@@ -1,5 +1,15 @@
 # GPU host requirements
 
+> **Decommissioned 2026-08-14.** The H100 host this describes no longer exists, and its
+> data was retrieved and verified before deletion: every file it held was checksummed
+> against the local copy, and the score files match byte for byte. Nothing below is
+> needed to reproduce the *results* -- the score files are archived and released -- but
+> it is kept because it is what a replicator would need in order to re-score the corpus
+> from scratch, and because the model revisions and batch sizes recorded here are part
+> of what makes the numbers reproducible.
+>
+> The two helper scripts that lived only on that host are now in `host/`.
+
 What the detector runs need from the VM, with the reasoning, so the sysadmin can size
 it without a back-and-forth.
 
@@ -101,3 +111,23 @@ not a free addition.
 
 Each detector writes its own parquet, so a failure costs one detector rather than the
 sweep, and the LLM judge caches to disk so re-runs are close to free.
+
+
+## What actually ran, for the record
+
+| Detector | Model | Batch | Genres | Wall clock |
+|---|---|---|---|---|
+| `fast_detect_gpt` | `Qwen/Qwen2.5-7B` | 16 | all | ~35 min |
+| `binoculars` | `tiiuae/falcon-7b` + `-instruct` | 8 | all | ~70 min |
+| `detect_code_gpt` | `codellama/CodeLlama-7b-hf` | 64 | diff only | 9 h 34 min |
+| `llm_judge` | `vllm/gemma-4-31B-it` | --- | all | 1 h 33 min |
+
+The judge ran from the workstation over the OpenWebUI endpoint rather than on the host,
+so it survives the host's deletion by construction. `heuristics`, `selfadmission` and
+`fingerprint` are CPU-only and run anywhere.
+
+DetectCodeGPT was re-run after its adapter was corrected from a log-likelihood
+discrepancy to the published normalised perturbed log rank. The superseded scores are
+kept in `data/processed/scores_superseded/` so the correction is visible rather than
+silently overwritten. Note that `host/sweep.sh` records batch size 16 for that detector;
+the released scores were produced at 64, which is the figure in the table above.

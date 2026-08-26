@@ -64,3 +64,7 @@ paper/**/*.pdf
 .idea/
 .vscode/
 *.swp
+
+# The release bundle is 14 MB of scoring artifacts destined for Zenodo, not for git.
+# Its manifest is tracked, so the checksums travel with the code.
+release/*.tar.gz
