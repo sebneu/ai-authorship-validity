@@ -68,3 +68,15 @@ paper/**/*.pdf
 # The release bundle is 14 MB of scoring artifacts destined for Zenodo, not for git.
 # Its manifest is tracked, so the checksums travel with the code.
 release/*.tar.gz
+
+# Submission artifacts and Springer class distribution extras: kept locally and in the
+# private working repository, but not part of a replication package.
+paper/title_page.*
+paper/submission_novelty.txt
+paper/example.eps
+paper/history.txt
+paper/readme.txt
+paper/template.tex
+paper/usrguid3.*
+paper/spmpsci.bst
+paper/spphys.bst
